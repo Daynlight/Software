@@ -1,4 +1,5 @@
 services:
+# === backend === #
   backend_dev:
     build: 
       context: backend/
@@ -21,7 +22,7 @@ services:
     volumes:
       - ./backend:/home/node
       - /home/node/node_modules
- 
+
   db_dev:
     image: postgres:18
     container_name: db_dev
@@ -36,6 +37,28 @@ services:
     networks:
       - backend_dev
 
+# === routing === #
+  nginx:
+    image: nginx:1-alpine
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+    ports:
+      - "${NGINX_PORT}:80"
+    env_file:
+      - .env
+    networks:
+      - backend_dev
+
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - "TUNNEL_TOKEN=${CLOUDFLARE_TOKEN}"
+    networks:
+      - backend_dev
+
+# === settings === #
 volumes:
   postgres_dev_data:
 

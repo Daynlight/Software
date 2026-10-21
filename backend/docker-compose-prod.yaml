@@ -1,4 +1,5 @@
 services:
+# === backend === #
   backend:
     build: 
       context: backend/
@@ -6,8 +7,6 @@ services:
     container_name: backend
     depends_on:
       - db
-    ports:
-      - "${BACKEND_PORT}:3000"
     networks:
       - backend
     environment:
@@ -29,6 +28,26 @@ services:
     networks:
       - backend
 
+# === routing === #
+  nginx:
+    image: nginx:1-alpine
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template
+    env_file:
+      - .env
+    networks:
+      - backend
+
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - "TUNNEL_TOKEN=${CLOUDFLARE_TOKEN}"
+    networks:
+      - backend
+
+# === settings === #
 volumes:
   postgres_data:
 

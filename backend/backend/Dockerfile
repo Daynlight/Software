@@ -7,7 +7,6 @@ COPY --chown=node:node package*.json ./
 FROM base AS development
 ENV NODE_ENV=development
 COPY --chown=node:node . .
-COPY ./cert /cert
 CMD ["npm", "install"]
 CMD ["npm", "run", "start:dev"]
 
@@ -23,5 +22,4 @@ USER node
 WORKDIR /home/node
 COPY --from=builder --chown=node:node /home/node/node_modules ./node_modules
 COPY --from=builder --chown=node:node /home/node/dist ./dist
-COPY --from=builder --chown=node:node /home/node/cert /cert
 CMD ["node", "dist/main.js"]
