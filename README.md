@@ -20,7 +20,7 @@
 - backend via nestjs@12.1.1
 - frontend via nextjs@16.3.8
 - docker
-- pnpm
+- npm
 
 
 ## Architecture
@@ -34,3 +34,4 @@
 
 ## License
 [GNU v3](LICENSE)
+
