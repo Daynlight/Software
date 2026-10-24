@@ -61,5 +61,3 @@
 
 ## License
 [GNU v3](LICENSE)
-
-
