@@ -8,18 +8,21 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
-  };
+  }
 
-  @Get("/health")
+  @Get('/health')
   getHealth() {
     try {
       return {
         status: 'healthy',
         uptime: process.uptime(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      throw new HttpException({status: 'unhealthy', error: error.message}, HttpStatus.SERVICE_UNAVAILABLE);
-    };
-  };
-};
+      throw new HttpException(
+        { status: 'unhealthy', error: error.message },
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
+}
