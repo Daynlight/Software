@@ -17,6 +17,7 @@ const config: Config = {
     'app/components/ProfileEditor.tsx',
     'app/components/ProfileForm.tsx',
     'app/components/SessionStatus.tsx',
+    'app/components/UserPhoto.tsx',
     'app/lib/session-client.ts',
     'app/lib/use-session-user.ts',
   ],

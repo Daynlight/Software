@@ -4,7 +4,8 @@ import ProfileForm from './ProfileForm'
 const user = {
   firstName: 'Jan',
   lastName: 'Kowalski',
-  indexNumber: '123456',
+  indexNumber: 'S12345',
+  photoUrl: 'https://example.com/photo.jpg',
   about: '',
   skills: '',
 }
@@ -21,8 +22,13 @@ describe('ProfileForm', () => {
 
     expect(screen.getByText('Jan')).toBeInTheDocument()
     expect(screen.getByText('Kowalski')).toBeInTheDocument()
-    expect(screen.getByText('Numer USOS')).toBeInTheDocument()
-    expect(screen.getByText('123456')).toBeInTheDocument()
+    expect(screen.getByText('Numer albumu')).toBeInTheDocument()
+    expect(screen.getByText('S12345')).toBeInTheDocument()
+    expect(screen.queryByText('Numer USOS')).not.toBeInTheDocument()
+    expect(screen.queryByText('123456')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Zdjęcie profilowe' }),
+    ).toHaveAttribute('src', 'https://example.com/photo.jpg')
     expect(screen.getByLabelText('O mnie')).toHaveValue('')
     expect(screen.getByLabelText('Umiejętności')).toHaveValue('')
   })
@@ -66,5 +72,14 @@ describe('ProfileForm', () => {
       'href',
       '/dashboard',
     )
+  })
+
+  it('shows a placeholder when the user has no photo', () => {
+    render(<ProfileForm user={{ ...user, photoUrl: null }} />)
+
+    expect(screen.getByText('Zdjęcie')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('img', { name: 'Zdjęcie profilowe' }),
+    ).not.toBeInTheDocument()
   })
 })

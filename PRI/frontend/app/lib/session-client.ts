@@ -2,6 +2,8 @@ export interface UsosUser {
   id: string;
   firstName: string;
   lastName: string;
+  studentNumber: string | null;
+  photoUrl: string | null;
 }
 
 export async function fetchCurrentUser(): Promise<UsosUser | null> {

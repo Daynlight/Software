@@ -3,7 +3,13 @@ import { JwtService } from '@nestjs/jwt';
 import { SessionService } from './session.service';
 
 const secret = 'a'.repeat(64);
-const user = { id: '123', firstName: 'Jan', lastName: 'Kowalski' };
+const user = {
+  id: '123',
+  firstName: 'Jan',
+  lastName: 'Kowalski',
+  studentNumber: '123456',
+  photoUrl: 'https://example.com/photo.jpg',
+};
 
 function createService(ttlSeconds = 3600) {
   const config = {
@@ -21,6 +27,23 @@ describe('SessionService', () => {
     const token = await service.issue(user);
 
     await expect(service.verify(token)).resolves.toEqual(user);
+  });
+
+  it('returns nulls for a legacy token without the new fields', async () => {
+    const { service, jwt } = createService();
+    const legacyToken = jwt.sign({
+      sub: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
+
+    await expect(service.verify(legacyToken)).resolves.toEqual({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      studentNumber: null,
+      photoUrl: null,
+    });
   });
 
   it('issues a token with the configured lifetime', async () => {

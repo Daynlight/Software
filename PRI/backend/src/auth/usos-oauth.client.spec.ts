@@ -161,7 +161,14 @@ describe('UsosOAuthClient', () => {
     it('maps the USOS profile to a session user', async () => {
       const fetchMock = mockFetch(
         200,
-        JSON.stringify({ id: '123', first_name: 'Jan', last_name: 'Kowalski' }),
+        JSON.stringify({
+          id: '123',
+          first_name: 'Jan',
+          last_name: 'Kowalski',
+          student_number: '123456',
+          has_photo: true,
+          photo_urls: { '200x200': 'https://example.com/photo.jpg' },
+        }),
       );
       global.fetch = fetchMock;
       const { client } = createClient();
@@ -170,15 +177,61 @@ describe('UsosOAuthClient', () => {
         id: '123',
         firstName: 'Jan',
         lastName: 'Kowalski',
+        studentNumber: '123456',
+        photoUrl: 'https://example.com/photo.jpg',
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://usosapps.amu.edu.pl/services/users/user?fields=id%7Cfirst_name%7Clast_name',
+        'https://usosapps.amu.edu.pl/services/users/user?fields=id%7Cfirst_name%7Clast_name%7Cstudent_number%7Chas_photo%7Cphoto_urls%5B200x200%5D',
         expect.objectContaining({ method: 'GET' }),
       );
       expect(authorizationHeader(fetchMock)).toContain(
         'oauth_token="access-token"',
       );
+    });
+
+    it('omits a photo the user is not allowed to show', async () => {
+      global.fetch = mockFetch(
+        200,
+        JSON.stringify({
+          id: '123',
+          first_name: 'Jan',
+          last_name: 'Kowalski',
+          student_number: '123456',
+          has_photo: false,
+          photo_urls: { '200x200': 'https://example.com/photo.jpg' },
+        }),
+      );
+      const { client } = createClient();
+
+      await expect(client.fetchUser(token)).resolves.toEqual({
+        id: '123',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        studentNumber: '123456',
+        photoUrl: null,
+      });
+    });
+
+    it('handles a profile without optional data', async () => {
+      global.fetch = mockFetch(
+        200,
+        JSON.stringify({
+          id: '123',
+          first_name: 'Jan',
+          last_name: 'Kowalski',
+          student_number: null,
+        }),
+      );
+      const { client } = createClient();
+
+      await expect(client.fetchUser(token)).resolves.toEqual({
+        id: '123',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        studentNumber: null,
+        photoUrl: null,
+      });
     });
 
     it('rejects a profile with missing fields', async () => {

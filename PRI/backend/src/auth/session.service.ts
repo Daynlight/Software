@@ -7,6 +7,8 @@ interface SessionPayload {
   sub: string;
   firstName: string;
   lastName: string;
+  studentNumber?: string | null;
+  photoUrl?: string | null;
 }
 
 @Injectable()
@@ -26,6 +28,8 @@ export class SessionService {
         sub: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
+        studentNumber: user.studentNumber,
+        photoUrl: user.photoUrl,
       },
       { expiresIn: this.ttlSeconds },
     );
@@ -40,6 +44,8 @@ export class SessionService {
             id: payload.sub,
             firstName: payload.firstName,
             lastName: payload.lastName,
+            studentNumber: payload.studentNumber ?? null,
+            photoUrl: payload.photoUrl ?? null,
           }
         : null;
     } catch {

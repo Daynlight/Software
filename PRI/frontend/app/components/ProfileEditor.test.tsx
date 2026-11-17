@@ -15,7 +15,13 @@ function response(body: unknown, ok = true): Response {
   return { ok, json: () => Promise.resolve(body) } as Response
 }
 
-const user = { id: '123456', firstName: 'Jan', lastName: 'Kowalski' }
+const user = {
+  id: '123456',
+  firstName: 'Jan',
+  lastName: 'Kowalski',
+  studentNumber: 'S12345',
+  photoUrl: 'https://example.com/photo.jpg',
+}
 
 beforeEach(() => {
   router.replace.mockReset()
@@ -39,8 +45,12 @@ describe('ProfileEditor', () => {
 
     expect(await screen.findByText('Jan')).toBeInTheDocument()
     expect(screen.getByText('Kowalski')).toBeInTheDocument()
-    expect(screen.getByText('Numer USOS')).toBeInTheDocument()
-    expect(screen.getByText('123456')).toBeInTheDocument()
+    expect(screen.getByText('Numer albumu')).toBeInTheDocument()
+    expect(screen.getByText('S12345')).toBeInTheDocument()
+    expect(screen.queryByText('Numer USOS')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Zdjęcie profilowe' }),
+    ).toHaveAttribute('src', 'https://example.com/photo.jpg')
     expect(screen.queryByText('Anna Kowalska')).not.toBeInTheDocument()
   })
 
@@ -50,5 +60,17 @@ describe('ProfileEditor', () => {
     render(<ProfileEditor />)
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'))
+  })
+
+  it('falls back when USOS exposes no index number or photo', async () => {
+    fetchMock.mockResolvedValue(
+      response({ ...user, studentNumber: null, photoUrl: null }),
+    )
+
+    render(<ProfileEditor />)
+
+    expect(await screen.findByText('Jan')).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
+    expect(screen.getByText('Zdjęcie')).toBeInTheDocument()
   })
 })

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Card from "../../components/Card";
+import UserPhoto from "../../components/UserPhoto";
 import { useSessionUser } from "../../lib/use-session-user";
 
 export default function DashboardPage() {
@@ -14,7 +15,7 @@ export default function DashboardPage() {
   const fields = [
     { label: "Imię", value: user.firstName },
     { label: "Nazwisko", value: user.lastName },
-    { label: "Numer USOS", value: user.id },
+    { label: "Numer albumu", value: user.studentNumber ?? "—" },
   ];
 
   return (
@@ -44,9 +45,10 @@ export default function DashboardPage() {
               ))}
             </dl>
 
-            <div className="flex h-40 w-32 shrink-0 items-center justify-center bg-placeholder text-[15px]">
-              Zdjęcie
-            </div>
+            <UserPhoto
+              url={user.photoUrl}
+              className="h-40 w-32 shrink-0 object-cover"
+            />
           </div>
 
           <Link

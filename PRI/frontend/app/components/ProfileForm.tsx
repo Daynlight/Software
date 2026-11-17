@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import UserPhoto from "./UserPhoto";
 import { useState } from "react";
 
 export type ProfileFormUser = {
   firstName: string;
   lastName: string;
   indexNumber: string;
+  photoUrl: string | null;
   about: string;
   skills: string;
 };
@@ -22,7 +24,7 @@ export default function ProfileForm({ user }: { user: ProfileFormUser }) {
   const readOnly = [
     { label: "Imię", value: user.firstName },
     { label: "Nazwisko", value: user.lastName },
-    { label: "Numer USOS", value: user.indexNumber },
+    { label: "Numer albumu", value: user.indexNumber },
   ];
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -43,9 +45,10 @@ export default function ProfileForm({ user }: { user: ProfileFormUser }) {
           ))}
         </dl>
 
-        <div className="order-first flex h-40 w-32 items-center justify-center bg-placeholder text-[15px] lg:order-none">
-          Zdjęcie
-        </div>
+        <UserPhoto
+          url={user.photoUrl}
+          className="order-first h-40 w-32 object-cover lg:order-none"
+        />
 
         <div className="flex flex-col gap-4">
           <div>

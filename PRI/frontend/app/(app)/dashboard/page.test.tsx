@@ -15,7 +15,13 @@ function response(body: unknown, ok = true): Response {
   return { ok, json: () => Promise.resolve(body) } as Response
 }
 
-const user = { id: '123456', firstName: 'Jan', lastName: 'Kowalski' }
+const user = {
+  id: '123456',
+  firstName: 'Jan',
+  lastName: 'Kowalski',
+  studentNumber: 'S12345',
+  photoUrl: 'https://example.com/photo.jpg',
+}
 
 beforeEach(() => {
   router.replace.mockReset()
@@ -40,8 +46,13 @@ describe('DashboardPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Pulpit: Jan Kowalski' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Numer USOS')).toBeInTheDocument()
-    expect(screen.getByText('123456')).toBeInTheDocument()
+    expect(screen.getByText('Numer albumu')).toBeInTheDocument()
+    expect(screen.getByText('S12345')).toBeInTheDocument()
+    expect(screen.queryByText('Numer USOS')).not.toBeInTheDocument()
+    expect(screen.queryByText('123456')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Zdjęcie profilowe' }),
+    ).toHaveAttribute('src', 'https://example.com/photo.jpg')
     expect(screen.queryByText('Anna Kowalska')).not.toBeInTheDocument()
     expect(router.replace).not.toHaveBeenCalled()
   })
@@ -60,5 +71,20 @@ describe('DashboardPage', () => {
     render(<DashboardPage />)
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'))
+  })
+
+  it('falls back when USOS exposes no index number or photo', async () => {
+    fetchMock.mockResolvedValue(
+      response({ ...user, studentNumber: null, photoUrl: null }),
+    )
+
+    render(<DashboardPage />)
+
+    await screen.findByRole('heading', { name: 'Pulpit: Jan Kowalski' })
+    expect(screen.getByText('—')).toBeInTheDocument()
+    expect(screen.getByText('Zdjęcie')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('img', { name: 'Zdjęcie profilowe' }),
+    ).not.toBeInTheDocument()
   })
 })

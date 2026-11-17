@@ -20,7 +20,13 @@ beforeEach(() => {
 describe('EditProfilePage', () => {
   it('shows the profile of the logged-in user', async () => {
     fetchMock.mockResolvedValue(
-      response({ id: '123456', firstName: 'Jan', lastName: 'Kowalski' }),
+      response({
+        id: '123456',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        studentNumber: 'S12345',
+        photoUrl: null,
+      }),
     )
 
     render(<EditProfilePage />)

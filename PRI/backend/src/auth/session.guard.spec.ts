@@ -2,7 +2,13 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { SessionGuard } from './session.guard';
 import { SESSION_COOKIE } from './auth.constants';
 
-const user = { id: '123', firstName: 'Jan', lastName: 'Kowalski' };
+const user = {
+  id: '123',
+  firstName: 'Jan',
+  lastName: 'Kowalski',
+  studentNumber: '123456',
+  photoUrl: 'https://example.com/photo.jpg',
+};
 
 function createContext(request: Record<string, unknown>): ExecutionContext {
   return {

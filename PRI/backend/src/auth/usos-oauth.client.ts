@@ -14,7 +14,8 @@ import {
 } from './auth.types';
 
 const HTTP_TIMEOUT_MS = 10_000;
-const USER_FIELDS = 'id|first_name|last_name';
+const USER_FIELDS =
+  'id|first_name|last_name|student_number|has_photo|photo_urls[200x200]';
 
 interface UsosResponse {
   status: number;
@@ -136,10 +137,17 @@ export class UsosOAuthClient {
         throw new Error('Incomplete profile');
       }
 
+      const photoUrl =
+        profile.has_photo && profile.photo_urls?.['200x200']
+          ? profile.photo_urls['200x200']
+          : null;
+
       return {
         id: String(profile.id),
         firstName: profile.first_name,
         lastName: profile.last_name,
+        studentNumber: profile.student_number ?? null,
+        photoUrl,
       };
     } catch {
       throw new BadGatewayException('Nieprawidłowy profil USOS API');

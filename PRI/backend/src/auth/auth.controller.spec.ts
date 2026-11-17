@@ -12,7 +12,13 @@ import {
   SESSION_COOKIE,
 } from './auth.constants';
 
-const user = { id: '123', firstName: 'Jan', lastName: 'Kowalski' };
+const user = {
+  id: '123',
+  firstName: 'Jan',
+  lastName: 'Kowalski',
+  studentNumber: '123456',
+  photoUrl: 'https://example.com/photo.jpg',
+};
 
 function createController(options: { cookiesSecure?: boolean } = {}) {
   const auth = {
