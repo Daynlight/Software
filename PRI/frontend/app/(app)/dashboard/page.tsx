@@ -1,15 +1,22 @@
+"use client";
+
 import Link from "next/link";
 import Card from "../../components/Card";
-import { mockUser as user } from "../../lib/mock-user";
-
-const fields = [
-  { label: "Imię", value: user.firstName },
-  { label: "Nazwisko", value: user.lastName },
-  { label: "Numer indeksu", value: user.indexNumber },
-  { label: "Rola w systemie", value: user.role },
-];
+import { useSessionUser } from "../../lib/use-session-user";
 
 export default function DashboardPage() {
+  const user = useSessionUser();
+
+  if (!user) {
+    return <p className="text-muted">Sprawdzanie sesji…</p>;
+  }
+
+  const fields = [
+    { label: "Imię", value: user.firstName },
+    { label: "Nazwisko", value: user.lastName },
+    { label: "Numer USOS", value: user.id },
+  ];
+
   return (
     <div>
       <h1 className="sr-only">
@@ -29,20 +36,12 @@ export default function DashboardPage() {
         <Card id="moje-dane" title="Moje dane">
           <div className="flex flex-col-reverse gap-6 sm:flex-row sm:justify-between">
             <dl className="flex flex-col gap-2">
-              {fields.map((f) => (
-                <div key={f.label}>
-                  <dt className="text-sm leading-6 text-muted">{f.label}</dt>
-                  <dd className="font-medium leading-6">{f.value}</dd>
+              {fields.map((field) => (
+                <div key={field.label}>
+                  <dt className="text-sm leading-6 text-muted">{field.label}</dt>
+                  <dd className="font-medium leading-6">{field.value}</dd>
                 </div>
               ))}
-              <div>
-                <dt className="text-sm leading-6 text-muted">O mnie</dt>
-                <dd className="font-medium leading-6">{user.about}</dd>
-              </div>
-              <div>
-                <dt className="text-sm leading-6 text-muted">Umiejętności</dt>
-                <dd className="font-medium leading-6">{user.skills}</dd>
-              </div>
             </dl>
 
             <div className="flex h-40 w-32 shrink-0 items-center justify-center bg-placeholder text-[15px]">

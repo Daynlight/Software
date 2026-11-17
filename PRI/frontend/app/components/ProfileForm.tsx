@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 
-type User = {
+export type ProfileFormUser = {
   firstName: string;
   lastName: string;
   indexNumber: string;
-  role: string;
   about: string;
   skills: string;
 };
@@ -15,7 +14,7 @@ type User = {
 const fieldClass =
   "w-full min-h-20 rounded-lg border border-field bg-white px-4 py-3 font-inter text-base leading-[1.4] text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
-export default function ProfileForm({ user }: { user: User }) {
+export default function ProfileForm({ user }: { user: ProfileFormUser }) {
   const [about, setAbout] = useState(user.about);
   const [skills, setSkills] = useState(user.skills);
   const [saved, setSaved] = useState(false);
@@ -23,8 +22,7 @@ export default function ProfileForm({ user }: { user: User }) {
   const readOnly = [
     { label: "Imię", value: user.firstName },
     { label: "Nazwisko", value: user.lastName },
-    { label: "Numer indeksu", value: user.indexNumber },
-    { label: "Rola w systemie", value: user.role },
+    { label: "Numer USOS", value: user.indexNumber },
   ];
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
