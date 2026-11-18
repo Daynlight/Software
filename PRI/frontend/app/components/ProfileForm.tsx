@@ -8,6 +8,7 @@ export type ProfileFormUser = {
   firstName: string;
   lastName: string;
   indexNumber: string;
+  email: string | null;
   photoUrl: string | null;
   about: string;
   skills: string;
@@ -25,6 +26,7 @@ export default function ProfileForm({ user }: { user: ProfileFormUser }) {
     { label: "Imię", value: user.firstName },
     { label: "Nazwisko", value: user.lastName },
     { label: "Numer albumu", value: user.indexNumber },
+    { label: "E-mail", value: user.email ?? "Brak danych" },
   ];
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

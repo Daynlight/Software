@@ -9,6 +9,7 @@ const links = [
   { href: "/gielda", label: "Giełda" },
   { href: "/zgloszenia", label: "Zgłoszenia" },
   { href: "/projekt", label: "Projekt" },
+  { href: "/dashboard/profile", label: "Profil", special: true },
 ];
 
 export default function NavMenu() {
@@ -18,7 +19,9 @@ export default function NavMenu() {
     <nav aria-label="Menu główne">
       <ul className="flex flex-wrap gap-2">
         {links.map((link) => {
-          const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+          const active =
+            pathname === link.href || pathname.startsWith(`${link.href}/`);
+
           return (
             <li key={link.href}>
               <Link
@@ -27,7 +30,9 @@ export default function NavMenu() {
                 className={`flex min-h-[55px] min-w-[120px] items-center justify-center px-[14px] py-3 text-[15px] leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-w-[155px] ${
                   active
                     ? "bg-primary font-semibold text-primary-foreground"
-                    : "font-medium hover:bg-black/5"
+                    : link.href === "/dashboard/profile"
+                      ? "border-2 border-primary font-semibold text-primary hover:bg-primary/10"
+                      : "font-medium hover:bg-black/5"
                 }`}
               >
                 {link.label}

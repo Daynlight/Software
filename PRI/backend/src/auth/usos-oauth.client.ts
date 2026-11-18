@@ -15,7 +15,7 @@ import {
 
 const HTTP_TIMEOUT_MS = 10_000;
 const USER_FIELDS =
-  'id|first_name|last_name|student_number|has_photo|photo_urls[200x200]';
+  'id|first_name|last_name|student_number|email|has_photo|photo_urls[200x200]';
 
 interface UsosResponse {
   status: number;
@@ -147,6 +147,7 @@ export class UsosOAuthClient {
         firstName: profile.first_name,
         lastName: profile.last_name,
         studentNumber: profile.student_number ?? null,
+        email: profile.email ?? null,
         photoUrl,
       };
     } catch {

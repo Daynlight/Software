@@ -8,6 +8,7 @@ interface SessionPayload {
   firstName: string;
   lastName: string;
   studentNumber?: string | null;
+  email: string | null;
   photoUrl?: string | null;
 }
 
@@ -29,6 +30,7 @@ export class SessionService {
         firstName: user.firstName,
         lastName: user.lastName,
         studentNumber: user.studentNumber,
+        email: user.email,
         photoUrl: user.photoUrl,
       },
       { expiresIn: this.ttlSeconds },
@@ -45,6 +47,7 @@ export class SessionService {
             firstName: payload.firstName,
             lastName: payload.lastName,
             studentNumber: payload.studentNumber ?? null,
+            email: payload.email ?? null,
             photoUrl: payload.photoUrl ?? null,
           }
         : null;

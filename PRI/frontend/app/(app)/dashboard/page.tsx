@@ -16,6 +16,7 @@ export default function DashboardPage() {
     { label: "Imię", value: user.firstName },
     { label: "Nazwisko", value: user.lastName },
     { label: "Numer albumu", value: user.studentNumber ?? "—" },
+    { label: "E-mail", value: user.email ?? "Brak danych" },
   ];
 
   return (

@@ -3,6 +3,7 @@ export interface UsosUser {
   firstName: string;
   lastName: string;
   studentNumber: string | null;
+  email: string | null;
   photoUrl: string | null;
 }
 
