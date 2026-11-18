@@ -9,6 +9,7 @@ const links = [
   { href: "/gielda", label: "Giełda" },
   { href: "/zgloszenia", label: "Zgłoszenia" },
   { href: "/projekt", label: "Projekt" },
+  { href: "/dashboard/profile", label: "Profil" },
 ];
 
 export default function NavMenu() {

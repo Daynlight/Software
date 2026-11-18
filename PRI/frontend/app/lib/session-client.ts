@@ -2,6 +2,9 @@ export interface UsosUser {
   id: string;
   firstName: string;
   lastName: string;
+  email: string | null;
+  studentNumber: string | null;
+  role: "student" | "pracownik" | "użytkownik";
 }
 
 export async function fetchCurrentUser(): Promise<UsosUser | null> {

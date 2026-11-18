@@ -5,8 +5,12 @@ import { useSearchParams } from "next/navigation";
 const messages: Record<string, string> = {
   usos_unavailable:
     "Serwis USOS jest chwilowo niedostępny. Spróbuj ponownie za kilka minut.",
+
   usos_auth_failed:
     "Logowanie przez USOS nie powiodło się. Spróbuj ponownie.",
+
+  session_expired:
+    "Twoja sesja wygasła. Zaloguj się ponownie.",
 };
 
 export default function LoginError() {

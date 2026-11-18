@@ -1,32 +1,28 @@
-import { render, screen } from '@testing-library/react'
-import EditProfilePage from './page'
+import { render, screen } from "@testing-library/react";
+import ProfilePage from "./page";
 
-jest.mock('next/navigation', () => {
-  const router = { replace: jest.fn() }
-  return { useRouter: () => router, __router: router }
-})
+jest.mock("../../../components/ProfileDetails", () => {
+  return function MockProfileDetails() {
+    return <div>Dane profilu</div>;
+  };
+});
 
-const fetchMock = jest.fn()
+describe("ProfilePage", () => {
+  it("renders the profile page", () => {
+    render(<ProfilePage />);
 
-function response(body: unknown, ok = true): Response {
-  return { ok, json: () => Promise.resolve(body) } as Response
-}
+    expect(
+      screen.getByRole("heading", {
+        name: "Profil użytkownika",
+      }),
+    ).toBeInTheDocument();
 
-beforeEach(() => {
-  fetchMock.mockReset()
-  global.fetch = fetchMock as unknown as typeof fetch
-})
+    expect(
+      screen.getByRole("heading", {
+        name: "Moje dane",
+      }),
+    ).toBeInTheDocument();
 
-describe('EditProfilePage', () => {
-  it('shows the profile of the logged-in user', async () => {
-    fetchMock.mockResolvedValue(
-      response({ id: '123456', firstName: 'Jan', lastName: 'Kowalski' }),
-    )
-
-    render(<EditProfilePage />)
-
-    expect(await screen.findByText('Jan')).toBeInTheDocument()
-    expect(screen.getByText('Moje dane')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Zapisz profil' })).toBeInTheDocument()
-  })
-})
+    expect(screen.getByText("Dane profilu")).toBeInTheDocument();
+  });
+});

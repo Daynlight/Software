@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Card from "../../../components/Card";
-import ProfileEditor from "../../../components/ProfileEditor";
+import ProfileDetails from "../../../components/ProfileDetails";
 
 export const metadata: Metadata = {
-  title: "Edycja profilu · PRI 2.0",
+  title: "Profil · PRI 2.0",
 };
 
-export default function EditProfilePage() {
+export default function ProfilePage() {
   return (
     <div className="mx-auto w-full max-w-[1116px]">
-      <h1 className="sr-only">Edycja profilu</h1>
+      <h1 className="sr-only">Profil użytkownika</h1>
+
       <Card id="moje-dane" title="Moje dane">
-        <ProfileEditor />
+        <ProfileDetails />
       </Card>
     </div>
   );

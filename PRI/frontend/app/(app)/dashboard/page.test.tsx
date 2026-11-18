@@ -1,64 +1,161 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import DashboardPage from './page'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
-jest.mock('next/navigation', () => {
-  const router = { replace: jest.fn() }
-  return { useRouter: () => router, __router: router }
-})
+import DashboardPage from "./page";
+
+jest.mock("next/navigation", () => {
+  const router = {
+    replace: jest.fn(),
+  };
+
+  return {
+    useRouter: () => router,
+    __router: router,
+  };
+});
 
 const router = (
-  jest.requireMock('next/navigation') as { __router: { replace: jest.Mock } }
-).__router
-const fetchMock = jest.fn()
+  jest.requireMock("next/navigation") as {
+    __router: {
+      replace: jest.Mock;
+    };
+  }
+).__router;
 
-function response(body: unknown, ok = true): Response {
-  return { ok, json: () => Promise.resolve(body) } as Response
+const fetchMock = jest.fn();
+
+function response(body: unknown, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(body),
+  } as Response;
 }
 
-const user = { id: '123456', firstName: 'Jan', lastName: 'Kowalski' }
+const user = {
+  id: "123456",
+  firstName: "Jan",
+  lastName: "Kowalski",
+};
 
 beforeEach(() => {
-  router.replace.mockReset()
-  fetchMock.mockReset()
-  global.fetch = fetchMock as unknown as typeof fetch
-})
+  router.replace.mockReset();
+  fetchMock.mockReset();
+  global.fetch = fetchMock as unknown as typeof fetch;
+});
 
-describe('DashboardPage', () => {
-  it('shows a loading state while the session is checked', () => {
-    fetchMock.mockReturnValue(new Promise(() => {}))
+describe("DashboardPage", () => {
+  it("pokazuje loading podczas pobierania dashboardu", () => {
+    fetchMock.mockReturnValue(new Promise(() => {}));
 
-    render(<DashboardPage />)
-
-    expect(screen.getByText('Sprawdzanie sesji…')).toBeInTheDocument()
-  })
-
-  it('shows the logged-in user instead of mock data', async () => {
-    fetchMock.mockResolvedValue(response(user))
-
-    render(<DashboardPage />)
+    render(<DashboardPage />);
 
     expect(
-      await screen.findByRole('heading', { name: 'Pulpit: Jan Kowalski' }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('Numer USOS')).toBeInTheDocument()
-    expect(screen.getByText('123456')).toBeInTheDocument()
-    expect(screen.queryByText('Anna Kowalska')).not.toBeInTheDocument()
-    expect(router.replace).not.toHaveBeenCalled()
-  })
+      screen.getByText("Ładowanie dashboardu…"),
+    ).toBeInTheDocument();
+  });
 
-  it('redirects anonymous visitors to the login page', async () => {
-    fetchMock.mockResolvedValue(response(null, false))
+  it("wyświetla dashboard po poprawnym pobraniu danych", async () => {
+    fetchMock.mockResolvedValue(response(user));
 
-    render(<DashboardPage />)
+    render(<DashboardPage />);
 
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'))
-  })
+    expect(
+      await screen.findByRole("heading", {
+        name: "Pulpit: Jan Kowalski",
+      }),
+    ).toBeInTheDocument();
 
-  it('redirects when the session request fails', async () => {
-    fetchMock.mockRejectedValue(new Error('network'))
+    expect(screen.getByText("123456")).toBeInTheDocument();
+  });
 
-    render(<DashboardPage />)
+  it("pokazuje czytelny błąd przy błędzie serwera", async () => {
+    fetchMock.mockResolvedValue(response(null, 500));
 
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'))
-  })
-})
+    render(<DashboardPage />);
+
+    expect(
+      await screen.findByText(
+        "Nie udało się załadować danych. Spróbuj ponownie.",
+      ),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", {
+        name: "Spróbuj ponownie",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("pokazuje czytelny błąd przy problemie z siecią", async () => {
+    fetchMock.mockRejectedValue(new Error("network"));
+
+    render(<DashboardPage />);
+
+    expect(
+      await screen.findByText(
+        "Nie udało się załadować danych. Spróbuj ponownie.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("ponawia pobieranie danych i wyświetla dashboard", async () => {
+    fetchMock.mockResolvedValue(response(null, 500));
+
+    render(<DashboardPage />);
+
+    const retry = await screen.findByRole("button", {
+      name: "Spróbuj ponownie",
+    });
+
+    fetchMock.mockResolvedValue(response(user));
+
+    fireEvent.click(retry);
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Pulpit: Jan Kowalski",
+      }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByText(
+        "Nie udało się załadować danych. Spróbuj ponownie.",
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  it("blokuje przycisk podczas ponawiania", async () => {
+    fetchMock.mockResolvedValue(response(null, 500));
+
+    render(<DashboardPage />);
+
+    const retry = await screen.findByRole("button", {
+      name: "Spróbuj ponownie",
+    });
+
+    fetchMock.mockReturnValue(new Promise(() => {}));
+
+    fireEvent.click(retry);
+
+    await waitFor(() => {
+      expect(retry).toBeDisabled();
+    });
+  });
+
+  it("przekierowuje do logowania po wygaśnięciu sesji", async () => {
+    fetchMock.mockResolvedValue(response(null, 401));
+
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith(
+        "/login?error=session_expired",
+      );
+    });
+  });
+});
