@@ -8,6 +8,7 @@ const user = {
   firstName: 'Jan',
   lastName: 'Kowalski',
   studentNumber: '123456',
+  email: 'jan.kowalski@example.com',
   photoUrl: 'https://example.com/photo.jpg',
 };
 
@@ -42,6 +43,7 @@ describe('SessionService', () => {
       firstName: user.firstName,
       lastName: user.lastName,
       studentNumber: null,
+      email: null,
       photoUrl: null,
     });
   });

@@ -166,6 +166,7 @@ describe('UsosOAuthClient', () => {
           first_name: 'Jan',
           last_name: 'Kowalski',
           student_number: '123456',
+          email: 'jan.kowalski@example.com',
           has_photo: true,
           photo_urls: { '200x200': 'https://example.com/photo.jpg' },
         }),
@@ -178,11 +179,12 @@ describe('UsosOAuthClient', () => {
         firstName: 'Jan',
         lastName: 'Kowalski',
         studentNumber: '123456',
+        email: 'jan.kowalski@example.com',
         photoUrl: 'https://example.com/photo.jpg',
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://usosapps.amu.edu.pl/services/users/user?fields=id%7Cfirst_name%7Clast_name%7Cstudent_number%7Chas_photo%7Cphoto_urls%5B200x200%5D',
+        'https://usosapps.amu.edu.pl/services/users/user?fields=id%7Cfirst_name%7Clast_name%7Cstudent_number%7Cemail%7Chas_photo%7Cphoto_urls%5B200x200%5D',
         expect.objectContaining({ method: 'GET' }),
       );
       expect(authorizationHeader(fetchMock)).toContain(
@@ -198,6 +200,7 @@ describe('UsosOAuthClient', () => {
           first_name: 'Jan',
           last_name: 'Kowalski',
           student_number: '123456',
+          email: null,
           has_photo: false,
           photo_urls: { '200x200': 'https://example.com/photo.jpg' },
         }),
@@ -209,6 +212,7 @@ describe('UsosOAuthClient', () => {
         firstName: 'Jan',
         lastName: 'Kowalski',
         studentNumber: '123456',
+        email: null,
         photoUrl: null,
       });
     });
@@ -220,6 +224,7 @@ describe('UsosOAuthClient', () => {
           id: '123',
           first_name: 'Jan',
           last_name: 'Kowalski',
+          email: null,
           student_number: null,
         }),
       );
@@ -230,6 +235,7 @@ describe('UsosOAuthClient', () => {
         firstName: 'Jan',
         lastName: 'Kowalski',
         studentNumber: null,
+        email: null,
         photoUrl: null,
       });
     });
