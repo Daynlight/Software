@@ -15,7 +15,9 @@ export default function ProfileEditor() {
       user={{
         firstName: user.firstName,
         lastName: user.lastName,
-        indexNumber: user.id,
+        studentNumber: user.studentNumber,
+        email: user.email,
+        role: user.role,
         about: "",
         skills: "",
       }}
