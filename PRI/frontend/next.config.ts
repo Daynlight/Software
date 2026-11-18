@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const backendUrl = process.env.BACKEND_INTERNAL_URL ?? "http://localhost:3000";
+
 const nextConfig: NextConfig = {
   /* config options here */
   output: "standalone",
@@ -8,6 +10,14 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendUrl}/:path*`,
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {

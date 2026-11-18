@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -12,17 +12,10 @@ export class AppController {
 
   @Get('/health')
   getHealth() {
-    try {
-      return {
-        status: 'healthy',
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      throw new HttpException(
-        { status: 'unhealthy', error: error.message },
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
-    }
+    return {
+      status: 'healthy',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    };
   }
 }

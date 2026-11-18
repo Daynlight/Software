@@ -13,6 +13,13 @@ services:
       - DB_DATABASE=${DB_DATABASE}
       - DB_PORT=5432
       - DB_HOST=db
+      - USOS_API_BASE_URL=${USOS_API_BASE_URL}
+      - USOS_CONSUMER_KEY=${USOS_CONSUMER_KEY}
+      - USOS_CONSUMER_SECRET=${USOS_CONSUMER_SECRET}
+      - USOS_CALLBACK_URL=${USOS_CALLBACK_URL}
+      - USOS_SCOPES=${USOS_SCOPES}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - SESSION_SECRET=${SESSION_SECRET}
     networks:
       - backend
       - backend_inner
