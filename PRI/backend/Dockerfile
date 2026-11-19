@@ -5,17 +5,18 @@ COPY --chown=node:node package*.json ./
 
 # --- Development
 FROM base AS development
-ENV NODE_ENV=development
+# ENV NODE_ENV=development
 RUN npm install
 COPY --chown=node:node . .
 CMD ["npm", "run", "start:dev"]
 
 # --- Production
 FROM base AS builder
-ENV NODE_ENV=production
+# ENV NODE_ENV=production
+COPY --chown=node:node package*.json ./
 RUN npm ci
 COPY --chown=node:node . .
-RUN npm run build && npm prune --omit=dev
+RUN npm run build
 
 FROM node:22-alpine AS production
 ENV NODE_ENV=production
