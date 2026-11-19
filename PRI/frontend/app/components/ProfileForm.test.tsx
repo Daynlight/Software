@@ -5,6 +5,7 @@ const user = {
   firstName: 'Jan',
   lastName: 'Kowalski',
   indexNumber: 'S12345',
+  email: 'jan.kowalski@example.com',
   photoUrl: 'https://example.com/photo.jpg',
   about: '',
   skills: '',
@@ -24,6 +25,8 @@ describe('ProfileForm', () => {
     expect(screen.getByText('Kowalski')).toBeInTheDocument()
     expect(screen.getByText('Numer albumu')).toBeInTheDocument()
     expect(screen.getByText('S12345')).toBeInTheDocument()
+    expect(screen.getByText('E-mail')).toBeInTheDocument()
+    expect(screen.getByText('jan.kowalski@example.com')).toBeInTheDocument()
     expect(screen.queryByText('Numer USOS')).not.toBeInTheDocument()
     expect(screen.queryByText('123456')).not.toBeInTheDocument()
     expect(
@@ -81,5 +84,11 @@ describe('ProfileForm', () => {
     expect(
       screen.queryByRole('img', { name: 'Zdjęcie profilowe' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('shows a fallback when the email is missing', () => {
+    render(<ProfileForm user={{ ...user, email: null }} />)
+
+    expect(screen.getByText('Brak danych')).toBeInTheDocument()
   })
 })

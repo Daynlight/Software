@@ -20,6 +20,7 @@ const user = {
   firstName: 'Jan',
   lastName: 'Kowalski',
   studentNumber: 'S12345',
+  email: 'jan.kowalski@example.com',
   photoUrl: 'https://example.com/photo.jpg',
 }
 
