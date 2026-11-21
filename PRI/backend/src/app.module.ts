@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import configuration from './config/configuration';
 import { validateEnvironment } from './config/environment';
 import { DatabaseModule } from './database/database.module';
-import { UserDBModule } from './database/users/users.module';
+
 
 @Module({
   imports: [
@@ -19,7 +19,6 @@ import { UserDBModule } from './database/users/users.module';
     }),
     AuthModule,
     DatabaseModule,
-    UserDBModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BeforeInsert, OneToMany } from 'typeorm';
+import { GroupMember } from '../groups_members/groups_members.entity';
 
 @Entity('users')
 export class User {
@@ -22,5 +23,8 @@ export class User {
   
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => GroupMember, (member) => member.user)
+  groupMembers: GroupMember[];
 };
 

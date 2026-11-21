@@ -18,6 +18,7 @@ describe('UsersService', () => {
     student_number: 654321,
     email: 'jan.kowalski@example.edu.pl',
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    groupMembers: [],
   };
 
   beforeEach(async () => {
