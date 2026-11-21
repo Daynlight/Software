@@ -7,6 +7,7 @@ export type UsosHandshake = UsosToken;
 
 export interface UsosSessionUser {
   id: string;
+  usos_id: number;
   firstName: string;
   lastName: string;
   studentNumber: string | null;
@@ -16,6 +17,7 @@ export interface UsosSessionUser {
 
 export interface UsosProfile {
   id: string;
+  usos_id: number;
   first_name: string;
   last_name: string;
   student_number?: string | null;

@@ -136,7 +136,12 @@ export class UsosOAuthClient {
       if (!profile.id || !profile.first_name || !profile.last_name) {
         throw new Error('Incomplete profile');
       }
-
+      
+      const usosId = Number(profile.id);
+      if (!Number.isInteger(usosId) || usosId <= 0) {
+        throw new Error('Invalid USOS id');
+      }
+      
       const photoUrl =
         profile.has_photo && profile.photo_urls?.['200x200']
           ? profile.photo_urls['200x200']
@@ -144,6 +149,7 @@ export class UsosOAuthClient {
 
       return {
         id: String(profile.id),
+        usos_id: usosId,
         firstName: profile.first_name,
         lastName: profile.last_name,
         studentNumber: profile.student_number ?? null,
