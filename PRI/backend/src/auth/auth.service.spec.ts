@@ -1,14 +1,29 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
+import { UsosSessionUser } from './auth.types';
 
-const user = {
+const dbUser = {
+  id: '550e8400-e29b-41d4-a716-446655440000',
+  usos_id: 123,
+};
+
+const usosUser: UsosSessionUser = {
   id: '123',
+  usos_id: 123,
   firstName: 'Jan',
   lastName: 'Kowalski',
   studentNumber: '123456',
+  email: 'jan.kowalski@example.edu.pl',
   photoUrl: 'https://example.com/photo.jpg',
 };
+
+const sessionUser: UsosSessionUser = {
+  ...usosUser,
+  id: dbUser.id,
+  usos_id: dbUser.usos_id,
+};
+
 const handshake = { token: 'request-token', secret: 'request-secret' };
 
 function createService() {
@@ -18,13 +33,16 @@ function createService() {
       token: 'access-token',
       secret: 'access-secret',
     }),
-    fetchUser: jest.fn().mockResolvedValue(user),
+    fetchUser: jest.fn().mockResolvedValue(usosUser),
   };
   const handshakeCookies = {
     seal: jest.fn().mockReturnValue('sealed-handshake'),
     open: jest.fn().mockReturnValue(handshake),
   };
   const sessions = { issue: jest.fn().mockResolvedValue('session-token') };
+  const users = {
+    findOrCreateUser: jest.fn().mockResolvedValue(dbUser),
+  };
   const config = {
     get: jest.fn().mockReturnValue('https://usosapps.amu.edu.pl'),
   } as unknown as ConfigService;
@@ -34,11 +52,13 @@ function createService() {
       usos as never,
       handshakeCookies as never,
       sessions as never,
+      users as never,
       config,
     ),
     usos,
     handshakeCookies,
     sessions,
+    users,
   };
 }
 
@@ -71,13 +91,14 @@ describe('AuthService', () => {
   });
 
   describe('complete', () => {
-    it('exchanges the verifier and issues a session', async () => {
-      const { service, usos, handshakeCookies, sessions } = createService();
+    it('exchanges the verifier, persists the user, and issues a session', async () => {
+      const { service, usos, handshakeCookies, sessions, users } =
+        createService();
 
       await expect(
         service.complete('sealed-handshake', 'verifier'),
       ).resolves.toEqual({
-        user,
+        user: sessionUser,
         sessionToken: 'session-token',
       });
 
@@ -87,7 +108,8 @@ describe('AuthService', () => {
         token: 'access-token',
         secret: 'access-secret',
       });
-      expect(sessions.issue).toHaveBeenCalledWith(user);
+      expect(users.findOrCreateUser).toHaveBeenCalledWith(123);
+      expect(sessions.issue).toHaveBeenCalledWith(sessionUser);
     });
 
     it('rejects a missing verifier', async () => {

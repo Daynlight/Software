@@ -1,12 +1,15 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { SessionGuard } from './session.guard';
 import { SESSION_COOKIE } from './auth.constants';
+import { UsosSessionUser } from './auth.types';
 
-const user = {
-  id: '123',
+const user: UsosSessionUser = {
+  id: '550e8400-e29b-41d4-a716-446655440000',
+  usos_id: 123456,
   firstName: 'Jan',
   lastName: 'Kowalski',
   studentNumber: '123456',
+  email: 'jan.kowalski@example.edu.pl',
   photoUrl: 'https://example.com/photo.jpg',
 };
 
@@ -16,7 +19,7 @@ function createContext(request: Record<string, unknown>): ExecutionContext {
   } as unknown as ExecutionContext;
 }
 
-function createGuard(verifiedUser: typeof user | null) {
+function createGuard(verifiedUser: UsosSessionUser | null) {
   const sessions = {
     verify: jest.fn().mockResolvedValue(verifiedUser),
   };
