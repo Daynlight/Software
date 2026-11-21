@@ -52,13 +52,28 @@ export class AuthService {
 
     const accessToken = await this.usos.exchangeToken(tokens, verifier);
     const usosProfile = await this.usos.fetchUser(accessToken);
-
+    
     const usosId = Number(usosProfile.id);
     if (!Number.isInteger(usosId) || usosId <= 0) {
       throw new UnauthorizedException('Niepoprawny identyfikator użytkownika USOS');
     }
-
-    const dbUser = await this.users.findOrCreateUser(usosId);
+    
+    const studentNumberRaw = usosProfile.studentNumber;
+    const parsedStudentNumber =
+      studentNumberRaw === null ||
+      studentNumberRaw === undefined ||
+      studentNumberRaw === '' ? null : Number(studentNumberRaw);
+    
+    const normalizedStudentNumber =
+      parsedStudentNumber !== null && Number.isInteger(parsedStudentNumber) ? parsedStudentNumber : null;
+    
+    const dbUser = await this.users.findOrCreateUser(
+      usosId,
+      usosProfile.firstName,
+      usosProfile.lastName,
+      normalizedStudentNumber,
+      usosProfile.email ?? null,
+    );
 
     const sessionUser: UsosSessionUser = {
       ...usosProfile,

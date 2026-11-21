@@ -108,8 +108,47 @@ describe('AuthService', () => {
         token: 'access-token',
         secret: 'access-secret',
       });
-      expect(users.findOrCreateUser).toHaveBeenCalledWith(123);
+      expect(users.findOrCreateUser).toHaveBeenCalledWith(
+        123,
+        'Jan',
+        'Kowalski',
+        123456,
+        'jan.kowalski@example.edu.pl',
+      );
       expect(sessions.issue).toHaveBeenCalledWith(sessionUser);
+    });
+
+    it('normalizes missing studentNumber and email to null', async () => {
+      const { service, usos, users } = createService();
+      usos.fetchUser.mockResolvedValue({
+        ...usosUser,
+        studentNumber: '',
+        email: null,
+      });
+
+      await service.complete('sealed-handshake', 'verifier');
+
+      expect(users.findOrCreateUser).toHaveBeenCalledWith(
+        123,
+        'Jan',
+        'Kowalski',
+        null,
+        null,
+      );
+    });
+
+    it('rejects an invalid USOS user id', async () => {
+      const { service, usos, users } = createService();
+      usos.fetchUser.mockResolvedValue({
+        ...usosUser,
+        id: '0',
+      });
+
+      await expect(
+        service.complete('sealed-handshake', 'verifier'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+
+      expect(users.findOrCreateUser).not.toHaveBeenCalled();
     });
 
     it('rejects a missing verifier', async () => {

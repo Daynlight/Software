@@ -14,13 +14,19 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { usos_id } });
   }
 
-  async findOrCreateUser(usos_id: number): Promise<User> {
+  async findOrCreateUser(
+    usos_id: number,
+    first_name: string, 
+    last_name: string, 
+    student_number?: number | null,
+    email?: string | null,
+  ): Promise<User> {
     const existing = await this.findByUsosID(usos_id);
     if (existing) {
       return existing;
     }
 
-    const newUser = this.usersRepository.create({ usos_id });
+    const newUser = this.usersRepository.create({ usos_id, first_name, last_name, student_number, email });
     return this.usersRepository.save(newUser);
   }
 }
