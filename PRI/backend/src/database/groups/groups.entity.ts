@@ -9,7 +9,7 @@ export class Group {
   @Column({ type: 'varchar', nullable: false })
   name: string;
 
-  @Column({ type: 'string', nullable: false })
+  @Column({ type: 'uuid', nullable: false })
   owner_id: string;
   
   @Column({ type: 'varchar', nullable: true })

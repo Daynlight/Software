@@ -1,11 +1,35 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import { Entity, Index, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { User } from '../users/users.entity';
 import { Group } from '../groups/groups.entity';
 
-export type MemberRole = "LEADER" | 'MEMBER' | string;
+export enum MemberRole {
+  LEADER = 'LEADER',
+  MEMBER = 'MEMBER',
+}
+
+export enum GroupPermission {
+  VIEW_GROUP = 'VIEW_GROUP',
+  VIEW_MEMBERS = 'VIEW_MEMBERS',
+  EDIT_GROUP = 'EDIT_GROUP',
+  MANAGE_MEMBERS = 'MANAGE_MEMBERS', 
+  TRANSFER_LEADERSHIP = 'TRANSFER_LEADERSHIP',
+  END_GROUP = 'END_GROUP',
+  LEAVE_GROUP = 'LEAVE_GROUP',
+}
+
+export const PERMISSIONS: Record<MemberRole, GroupPermission[]> = {
+  [MemberRole.LEADER]: Object.values(GroupPermission),
+  [MemberRole.MEMBER]: [
+    GroupPermission.VIEW_GROUP,
+    GroupPermission.VIEW_MEMBERS,
+    GroupPermission.LEAVE_GROUP, 
+  ],
+};
+
+
 
 @Entity('groups_members')
-@Unique(['group_id', 'user_id'])
+@Index('UQ_groups_members_active', ['group_id', 'user_id'], { unique: true, where: '"leftAt" IS NULL'})
 export class GroupMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -13,8 +37,8 @@ export class GroupMember {
   @Column({ type: 'uuid', nullable: false })
   group_id: string;
 
-  @Column({ type: 'int', nullable: false })
-  user_id: number;
+  @Column({ type: 'uuid', nullable: false })
+  user_id: string;
 
   @Column({ type: 'varchar', default: 'MEMBER', nullable: false })
   role: MemberRole;
@@ -28,13 +52,13 @@ export class GroupMember {
   @ManyToOne(() => Group, (group) => group.groupMembers, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'group_id' })
+  @JoinColumn({ name: 'group_id', referencedColumnName: 'id' })
   group: Group;
 
   @ManyToOne(() => User, (user) => user.groupMembers, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'user_id', referencedColumnName: 'usos_id' })
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 }
 
