@@ -162,7 +162,7 @@ describe('UsosOAuthClient', () => {
       const fetchMock = mockFetch(
         200,
         JSON.stringify({
-          id: '123',
+          id: '123456',
           first_name: 'Jan',
           last_name: 'Kowalski',
           student_number: '123456',
@@ -175,7 +175,8 @@ describe('UsosOAuthClient', () => {
       const { client } = createClient();
 
       await expect(client.fetchUser(token)).resolves.toEqual({
-        id: '123',
+        id: '123456',
+        usos_id: 123456,
         firstName: 'Jan',
         lastName: 'Kowalski',
         studentNumber: '123456',
@@ -196,7 +197,7 @@ describe('UsosOAuthClient', () => {
       global.fetch = mockFetch(
         200,
         JSON.stringify({
-          id: '123',
+          id: '123456',
           first_name: 'Jan',
           last_name: 'Kowalski',
           student_number: '123456',
@@ -208,7 +209,8 @@ describe('UsosOAuthClient', () => {
       const { client } = createClient();
 
       await expect(client.fetchUser(token)).resolves.toEqual({
-        id: '123',
+        id: '123456',
+        usos_id: 123456,
         firstName: 'Jan',
         lastName: 'Kowalski',
         studentNumber: '123456',
@@ -221,7 +223,7 @@ describe('UsosOAuthClient', () => {
       global.fetch = mockFetch(
         200,
         JSON.stringify({
-          id: '123',
+          id: '123456',
           first_name: 'Jan',
           last_name: 'Kowalski',
           email: null,
@@ -231,7 +233,8 @@ describe('UsosOAuthClient', () => {
       const { client } = createClient();
 
       await expect(client.fetchUser(token)).resolves.toEqual({
-        id: '123',
+        id: '123456',
+        usos_id: 123456,
         firstName: 'Jan',
         lastName: 'Kowalski',
         studentNumber: null,
@@ -241,7 +244,7 @@ describe('UsosOAuthClient', () => {
     });
 
     it('rejects a profile with missing fields', async () => {
-      global.fetch = mockFetch(200, JSON.stringify({ id: '123' }));
+      global.fetch = mockFetch(200, JSON.stringify({ id: '123456' }));
       const { client } = createClient();
 
       await expect(client.fetchUser(token)).rejects.toBeInstanceOf(

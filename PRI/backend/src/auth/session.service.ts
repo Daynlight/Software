@@ -5,6 +5,7 @@ import { UsosSessionUser } from './auth.types';
 
 interface SessionPayload {
   sub: string;
+  usos_id: number;
   firstName: string;
   lastName: string;
   studentNumber?: string | null;
@@ -27,6 +28,7 @@ export class SessionService {
     return this.jwt.signAsync(
       {
         sub: user.id,
+        usos_id: user.usos_id,
         firstName: user.firstName,
         lastName: user.lastName,
         studentNumber: user.studentNumber,
@@ -40,10 +42,12 @@ export class SessionService {
   async verify(token: string): Promise<UsosSessionUser | null> {
     try {
       const payload = await this.jwt.verifyAsync<SessionPayload>(token);
-
+      const usosId = Number(payload.usos_id);
+      
       return payload.sub
         ? {
             id: payload.sub,
+            usos_id: usosId,
             firstName: payload.firstName,
             lastName: payload.lastName,
             studentNumber: payload.studentNumber ?? null,
