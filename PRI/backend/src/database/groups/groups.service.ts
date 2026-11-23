@@ -24,38 +24,78 @@ export class GroupsService {
 
 
 
-  // ==== Getters ==== //
-  async findByUUID(id: string): Promise<Group | null> {
-    return this.groupsRepository.findOne({ where: { id } });
+  // ==== Get Group ==== //
+  async findByUUID(group_id: string): Promise<Group | null> {
+    return this.groupsRepository.findOne({ 
+      where: { 
+        group_id: group_id, 
+      } 
+    });
   }
   
-  async findByOwnerIDAndName(user_id: number, name: string): Promise<Group | null> {
+  async findByOwnerIDAndName(owner_id: string, name: string): Promise<Group | null> {
     if (name.trim().length == 0) return null;
-    return this.groupsRepository.findOne({ where: { name, groupMembers: { user_id, role: 'owner', leftAt: IsNull() }}});
+
+    return this.groupsRepository.findOne({ 
+      where: { 
+        name: name, 
+        owner_id: owner_id, 
+      }
+    });
   }
  
-  async findByUserIDAndName(user_id: number, name: string): Promise<Group | null> {
+  async findByUserIDAndName(user_id: string, name: string): Promise<Group | null> {
     if (name.trim().length == 0) return null;
-    return this.groupsRepository.findOne({where: { name, groupMembers: { user_id, leftAt: IsNull() }}});
+    
+    return this.groupsRepository.findOne({
+      where: { 
+        name: name, 
+        groupMembers: { 
+          user_id: user_id, 
+          leftAt: IsNull() 
+        }
+      }
+    });
   }
 
-  async findAllByOwnerID(user_id: number): Promise<Group[]> {
-    return this.groupsRepository.find({ where: { groupMembers: { user_id, role: 'owner', leftAt: IsNull() }}});
+  async findAllByOwnerID(owner_id: string): Promise<Group[]> {
+    return this.groupsRepository.find({ 
+      where: {
+        owner_id: owner_id,
+      }
+    });
   }
   
-  async findAllByUserID(user_id: number): Promise<Group[]> {
-    return this.groupsRepository.find({where: { groupMembers: { user_id, leftAt: IsNull() }}});
+  async findAllByUserID(user_id: string): Promise<Group[]> {
+    return this.groupsRepository.find({
+      where: { 
+        groupMembers: { 
+          user_id: user_id, 
+          leftAt: IsNull() 
+        }
+      }
+    });
   }
- 
-  async getGroupMembers(groupId: string, includeInactive = false): Promise<GroupMemberWithRole[]> {
-    const group = await this.groupsRepository.findOne({ where: { id: groupId } });
+
+
+
+  // ==== Validate Users ==== //
+  async getGroupMembers(group_id: string, includeInactive = false): Promise<GroupMemberWithRole[]> {
+    const group = await this.groupsRepository.findOne({ 
+      where: { 
+        id: group_id 
+      } 
+    });
+
     if (!group) {
       throw new NotFoundException(`Group ${groupId} not found`);
     }
 
     const members = await this.groupMembersRepository.find({
       where: includeInactive ? { group_id: groupId } : { group_id: groupId, leftAt: IsNull() },
-      order: { joinedAt: 'ASC' },
+      order: { 
+        joinedAt: 'ASC' 
+      },
     });
 
     return members.map((m) => ({
@@ -68,22 +108,71 @@ export class GroupsService {
     }));
   }
 
+  async getGroupMemberInfo(group_id: string, user_id: string): Promise<GroupMemberWithRole> {
+    const group = await this.groupsRepository.findOne({ 
+      where: { 
+        id: group_id 
+      } 
+    });
+
+    if (!group) {
+      throw new NotFoundException(`Group ${groupId} not found`);
+    }
+
+    const member = await this.groupMembersRepository.findOne({
+      where: { 
+        group_id: group_id, 
+        leftAt: IsNull() 
+      },
+      order: { 
+        joinedAt: 'ASC' 
+      },
+    });
+
+    return {
+      id:       member.id,
+      group_id: member.group_id,
+      user_id:  member.user_id,
+      role:     member.role,
+      joinedAt: member.joinedAt,
+      leftAt:   member.leftAt,
+    };
+  }
+  
+  async isOwnerOfGroup(group_id: string, user_id: number): Promise<boolean> {
+    const group = await findByUUID(group_id);
+    if (group.owner_id == user_id) return true;
+    return false;
+  }
+  
+  async isLeaderOfGroup(group_id: string, user_id: number): Promise<boolean> {
+    const user = await getGroupMember(group_id, user_id);
+    if (user.role == 'LEADER') return true;
+    return false;
+  }
+  
+  async isMemberOfGroup(group_id: string, user_id: number): Promise<boolean> {
+    const user = await getGroupMember(group_id, user_id);
+    if (user.role == 'MEMBER' || user.role == "LEADER") return true;
+    return false;
+  }
 
 
-  // ==== Setters ==== //
-  async createGroup(owner_id: number, name: string, description?: string | null): Promise<Group | null> {
+
+  // ==== Group Create/End ==== //
+  async createGroup(owner_id: string, name: string, description?: string | null): Promise<Group | null> {
     const existing = await this.findByOwnerIDAndName(owner_id, name);
     if (existing) {
       return null;
     }
 
-    const newGroup = this.groupsRepository.create({ name, description });
+    const newGroup = this.groupsRepository.create({ owner_id, name, description });
     const savedGroup = await this.groupsRepository.save(newGroup);
 
     const ownerMember = this.groupMembersRepository.create({
       group_id: savedGroup.id,
       user_id: owner_id,
-      role: 'owner',
+      role: 'LEADER',
       leftAt: null,
     });
     await this.groupMembersRepository.save(ownerMember);
@@ -91,7 +180,9 @@ export class GroupsService {
     return savedGroup;
   }
 
-  async endProjectByUUID(groupId: string): Promise<boolean> {
+  async endProjectByUUID(groupId: string, user_id: string): Promise<boolean> {
+    if(!isLEaderOfGroup(group_id, user_id)) return false;
+
     const group = await this.groupsRepository.findOne({ where: { id: groupId }});
     if (!group) return false;
     if (group.endedAt !== null) return false;
@@ -102,7 +193,34 @@ export class GroupsService {
     return true;
   }
 
-  async addUserToGroup(groupId: string, userId: number, role: string = 'member'): Promise<GroupMember> {
+
+
+  // ==== Manage members in group ==== //
+  async setLeader(group_id: string, user_id: string, new_leader_id: string): Promise<boolean> {
+    if(!isLeaderOfGroup(group_id, user_id)) return false;
+    
+    const ownerMember = this.groupMembersRepository.create({
+      group_id: group_id,
+      user_id: new_leader_id,
+      role: 'LEADER',
+      leftAt: null,
+    });
+    
+    ownerMember.delete({
+      where: {
+        group_id: group_id,
+        user_id: user_id,
+        role: "LEADER",
+        leftAt: null,
+      }
+    });
+
+    await this.groupMembersRepository.save(ownerMember);
+    return true;
+  }
+
+  async addUserToGroup(groupId: string, leader_id: string, userId: number, role: string = 'member'): Promise<boolean> {
+    if (!isLeaderOfGroup(groupID, leader_id)) return false; 
     const group = await this.groupsRepository.findOne({ where: { id: groupId } });
     if (!group) {
       throw new NotFoundException(`Group ${groupId} not found`);
@@ -128,10 +246,13 @@ export class GroupsService {
       leftAt: null,
     });
 
-    return this.groupMembersRepository.save(member);
+    await this.groupMembersRepository.save(member);
+    return true;
   }
 
-  async removeUserFromGroup(groupId: string, userId: number): Promise<GroupMember> {
+  async removeUserFromGroup(groupId: string, leader_id: string, userId: number): Promise<GroupMember> {
+    if (!isLeaderOfGroup(groupID, leader_id)) return false; 
+    
     const activeMember = await this.groupMembersRepository.findOne({ where: { group_id: groupId, user_id: userId, leftAt: IsNull() }});
     if (!activeMember) {
       throw new NotFoundException(
@@ -144,18 +265,9 @@ export class GroupsService {
     return this.groupMembersRepository.save(activeMember);
   }
 
-  async assignRoleForUserInGroup(groupId: string, userId: number, role: MemberRole): Promise<GroupMember> {
-    const activeMember = await this.groupMembersRepository.findOne({ where: { group_id: groupId, user_id: userId, leftAt: IsNull() }});
-    if (!activeMember) {
-      throw new NotFoundException(
-        `Active membership for user ${userId} in group ${groupId} not found`,
-      );
-    }
+  
 
-    activeMember.role = role;
-    return this.groupMembersRepository.save(activeMember);
-  }
-
+  // ==== Manage group info ==== //
   async setDescription(groupId: string, description: string | null): Promise<Group> {
     const group = await this.groupsRepository.findOne({ where: { id: groupId } });
     if (!group) {
@@ -176,6 +288,4 @@ export class GroupsService {
     return this.groupsRepository.save(group);
   }
 }
-
-
 

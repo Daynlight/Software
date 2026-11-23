@@ -9,6 +9,9 @@ export class Group {
   @Column({ type: 'varchar', nullable: false })
   name: string;
 
+  @Column({ type: 'string', nullable: false })
+  owner_id: string;
+  
   @Column({ type: 'varchar', nullable: true })
   description: string | null;
   

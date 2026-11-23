@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Jo
 import { User } from '../users/users.entity';
 import { Group } from '../groups/groups.entity';
 
-export type MemberRole = 'owner' | 'admin' | 'promotor' | 'member' | string;
+export type MemberRole = "LEADER" | 'MEMBER' | string;
 
 @Entity('groups_members')
 @Unique(['group_id', 'user_id'])
@@ -16,7 +16,7 @@ export class GroupMember {
   @Column({ type: 'int', nullable: false })
   user_id: number;
 
-  @Column({ type: 'varchar', default: 'member', nullable: false })
+  @Column({ type: 'varchar', default: 'MEMBER', nullable: false })
   role: MemberRole;
 
   @CreateDateColumn()
