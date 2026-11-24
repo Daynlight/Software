@@ -135,6 +135,40 @@ describe('Groups API', () => {
       .expect(400);
   });
 
+  it('updates and leaves a group', async () => {
+    const { cookie } = await createUser(1);
+    const group = await request(server)
+      .post('/groups')
+      .set('Cookie', cookie)
+      .send({
+        name: 'Zespół A',
+        description: 'Opis projektu inżynierskiego',
+      })
+      .expect(201);
+
+    await request(server)
+      .patch(`/groups/${group.body.id}`)
+      .set('Cookie', cookie)
+      .send({ name: 'Nowa nazwa' })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.name).toBe('Nowa nazwa');
+      });
+
+    await request(server)
+      .post(`/groups/${group.body.id}/leave`)
+      .set('Cookie', cookie)
+      .expect(204);
+
+    await request(server)
+      .get('/groups?mine=true')
+      .set('Cookie', cookie)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.items).toEqual([]);
+      });
+  });
+
   it('creates a join request for another student', async () => {
     const { cookie } = await createUser(1);
     const { cookie: applicantCookie } = await createUser(2);

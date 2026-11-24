@@ -4,6 +4,7 @@ import { JoinRequestStatus } from '../../database/join_requests/join-requests.en
 import { CreateGroupDto } from './create-group.dto';
 import { ListJoinRequestsQueryDto } from './list-join-requests.dto';
 import { SearchGroupsQueryDto } from './search-groups.dto';
+import { UpdateGroupDto } from './update-group.dto';
 
 function errorsFor<T extends object>(type: new () => T, value: object) {
   return validateSync(plainToInstance(type, value));
@@ -67,6 +68,14 @@ describe('group DTO validation', () => {
       ).mine,
     ).toBe(true);
     expect(errorsFor(SearchGroupsQueryDto, { mine: 'maybe' })).toHaveLength(1);
+  });
+
+  it('validates group updates and allows partial data', () => {
+    expect(errorsFor(UpdateGroupDto, {})).toEqual([]);
+    expect(errorsFor(UpdateGroupDto, { name: 'Zespół A' })).toEqual([]);
+    expect(
+      errorsFor(UpdateGroupDto, { name: 'x', description: 'short' }),
+    ).toHaveLength(2);
   });
 
   it('validates request status and pagination', () => {

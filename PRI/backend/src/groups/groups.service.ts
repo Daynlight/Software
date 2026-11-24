@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -18,6 +19,7 @@ import { Group } from '../database/groups/groups.entity';
 import { User, UserRole } from '../database/users/users.entity';
 import { UsosSessionUser } from '../auth/auth.types';
 import { CreateGroupDto } from './dto/create-group.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 import { ListJoinRequestsQueryDto } from './dto/list-join-requests.dto';
 import { SearchGroupsQueryDto } from './dto/search-groups.dto';
 import {
@@ -111,6 +113,94 @@ export class GroupsService {
       this.rethrowUnique(error, 'Użytkownik należy już do grupy');
       throw error;
     }
+  }
+
+  async update(
+    user: UsosSessionUser,
+    groupId: string,
+    dto: UpdateGroupDto,
+  ): Promise<GroupSummary> {
+    await this.assertLeader(groupId, user.id);
+
+    if (dto.name === undefined && dto.description === undefined) {
+      throw new BadRequestException('Podaj nazwę lub opis grupy');
+    }
+
+    const group = await this.groupsRepository.findOne({
+      where: { id: groupId },
+      relations: { leader: true },
+    });
+
+    if (dto.name !== undefined) {
+      group.name = dto.name.trim();
+    }
+
+    if (dto.description !== undefined) {
+      group.description = dto.description.trim();
+    }
+
+    await this.groupsRepository.save(group);
+
+    return this.toSummary(
+      group,
+      group.leader,
+      true,
+      JoinRequestStatus.ACCEPTED,
+    );
+  }
+
+  async leave(user: UsosSessionUser, groupId: string): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      const group = await manager
+        .getRepository(Group)
+        .createQueryBuilder('g')
+        .setLock('pessimistic_write')
+        .where('g.id = :groupId', { groupId })
+        .getOne();
+
+      if (!group) {
+        throw new NotFoundException('Grupa nie istnieje');
+      }
+
+      const membership = await manager.findOne(GroupMember, {
+        where: { group_id: groupId, user_id: user.id },
+      });
+
+      if (!membership) {
+        throw new ForbiddenException('Nie należysz do tej grupy');
+      }
+
+      if (group.member_count <= 1) {
+        await manager.remove(group);
+        return;
+      }
+
+      if (membership.role === MemberRole.LEADER) {
+        const newLeader = await manager
+          .getRepository(GroupMember)
+          .createQueryBuilder('member')
+          .where('member.group_id = :groupId', { groupId })
+          .andWhere('member.user_id != :userId', { userId: user.id })
+          .orderBy('RANDOM()')
+          .limit(1)
+          .getOne();
+
+        if (!newLeader) {
+          await manager.remove(group);
+          return;
+        }
+
+        await manager.remove(membership);
+        newLeader.role = MemberRole.LEADER;
+        await manager.save(newLeader);
+        group.leader_id = newLeader.user_id;
+      } else {
+        await manager.remove(membership);
+      }
+
+      group.member_count -= 1;
+      await manager.save(group);
+    });
   }
 
   async search(

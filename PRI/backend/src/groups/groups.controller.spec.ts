@@ -42,6 +42,8 @@ function createController() {
     listRequests: jest.fn().mockResolvedValue({ items: [] }),
     accept: jest.fn().mockResolvedValue({ request: {} }),
     reject: jest.fn().mockResolvedValue({ request: {} }),
+    update: jest.fn().mockResolvedValue({ id: 'group-1' }),
+    leave: jest.fn().mockResolvedValue(undefined),
   };
 
   return {
@@ -93,6 +95,18 @@ describe('GroupsController', () => {
     await controller.accept(user, 'group-1', 'request-1');
 
     expect(service.accept).toHaveBeenCalledWith(user, 'group-1', 'request-1');
+  });
+
+  it('delegates updating and leaving a group', async () => {
+    const { controller, service } = createController();
+
+    await controller.update(user, 'group-1', { name: 'Nowa nazwa' });
+    await controller.leave(user, 'group-1');
+
+    expect(service.update).toHaveBeenCalledWith(user, 'group-1', {
+      name: 'Nowa nazwa',
+    });
+    expect(service.leave).toHaveBeenCalledWith(user, 'group-1');
   });
 
   it('delegates rejecting a request', async () => {

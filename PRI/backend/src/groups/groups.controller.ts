@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -15,6 +16,7 @@ import {
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -27,6 +29,7 @@ import { SessionGuard } from '../auth/session.guard';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { ListJoinRequestsQueryDto } from './dto/list-join-requests.dto';
 import { SearchGroupsQueryDto } from './dto/search-groups.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupsService } from './groups.service';
 import {
   GroupSummary,
@@ -53,6 +56,34 @@ export class GroupsController {
     @Body() dto: CreateGroupDto,
   ): Promise<GroupSummary> {
     return this.groups.create(user, dto);
+  }
+
+  @Patch(':groupId')
+  @ApiOperation({ summary: 'Zmień nazwę lub opis grupy (tylko lider)' })
+  @ApiOkResponse({ description: 'Grupa zaktualizowana' })
+  @ApiUnauthorizedResponse({ description: 'Brak sesji' })
+  @ApiForbiddenResponse({ description: 'Użytkownik nie jest liderem' })
+  @ApiNotFoundResponse({ description: 'Grupa nie istnieje' })
+  update(
+    @CurrentUser() user: UsosSessionUser,
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+    @Body() dto: UpdateGroupDto,
+  ): Promise<GroupSummary> {
+    return this.groups.update(user, groupId, dto);
+  }
+
+  @Post(':groupId/leave')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Opuść grupę' })
+  @ApiNoContentResponse({ description: 'Grupa opuszczona' })
+  @ApiUnauthorizedResponse({ description: 'Brak sesji' })
+  @ApiForbiddenResponse({ description: 'Użytkownik nie należy do grupy' })
+  @ApiNotFoundResponse({ description: 'Grupa nie istnieje' })
+  leave(
+    @CurrentUser() user: UsosSessionUser,
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+  ): Promise<void> {
+    return this.groups.leave(user, groupId);
   }
 
   @Get()

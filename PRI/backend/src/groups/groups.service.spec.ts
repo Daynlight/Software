@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   NotFoundException,
@@ -759,6 +760,139 @@ describe('GroupsService', () => {
       await expect(
         service.reject(sessionUser(outsider), group.id, request.id),
       ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    describe('update and leave', () => {
+      it('updates the group name and description as the leader', async () => {
+        const leader = await createUser(1);
+        const group = await createGroup(leader);
+
+        const renamed = await service.update(sessionUser(leader), group.id, {
+          name: 'Nowa nazwa',
+        });
+        const described = await service.update(sessionUser(leader), group.id, {
+          description: 'Nowy, pełniejszy opis projektu',
+        });
+
+        expect(renamed.name).toBe('Nowa nazwa');
+        expect(described.description).toBe('Nowy, pełniejszy opis projektu');
+        const stored = await groups.findOne({ where: { id: group.id } });
+        expect(stored?.name).toBe('Nowa nazwa');
+      });
+
+      it('rejects an empty update, a non-leader and a missing group', async () => {
+        const leader = await createUser(1);
+        const outsider = await createUser(2);
+        const group = await createGroup(leader);
+
+        await expect(
+          service.update(sessionUser(leader), group.id, {}),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        await expect(
+          service.update(sessionUser(outsider), group.id, { name: 'Nowa' }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        await expect(
+          service.update(
+            sessionUser(leader),
+            '00000000-0000-0000-0000-000000000000',
+            { name: 'Nowa' },
+          ),
+        ).rejects.toBeInstanceOf(NotFoundException);
+      });
+
+      it('lets a member leave without changing the leader', async () => {
+        const leader = await createUser(1);
+        const group = await createGroup(leader);
+        const member = await createUser(2);
+        await members.save(
+          members.create({
+            group_id: group.id,
+            user_id: member.id,
+            role: MemberRole.MEMBER,
+          }),
+        );
+        await groups.increment({ id: group.id }, 'member_count', 1);
+
+        await service.leave(sessionUser(member), group.id);
+
+        expect(
+          await members.findOne({
+            where: { group_id: group.id, user_id: member.id },
+          }),
+        ).toBeNull();
+        const stored = await groups.findOne({ where: { id: group.id } });
+        expect(stored?.member_count).toBe(1);
+        expect(stored?.leader_id).toBe(leader.id);
+      });
+
+      it('transfers leadership to a random remaining member', async () => {
+        const leader = await createUser(1);
+        const group = await createGroup(leader);
+        const member = await createUser(2);
+        await members.save(
+          members.create({
+            group_id: group.id,
+            user_id: member.id,
+            role: MemberRole.MEMBER,
+          }),
+        );
+        await groups.increment({ id: group.id }, 'member_count', 1);
+
+        await service.leave(sessionUser(leader), group.id);
+
+        const stored = await groups.findOne({ where: { id: group.id } });
+        expect(stored?.leader_id).toBe(member.id);
+        expect(stored?.member_count).toBe(1);
+        const promoted = await members.findOne({
+          where: { group_id: group.id, user_id: member.id },
+        });
+        expect(promoted?.role).toBe(MemberRole.LEADER);
+        expect(
+          await members.findOne({
+            where: { group_id: group.id, user_id: leader.id },
+          }),
+        ).toBeNull();
+      });
+
+      it('deletes the group when the last member leaves', async () => {
+        const leader = await createUser(1);
+        const group = await createGroup(leader);
+        const applicant = await createUser(2);
+        await service.requestToJoin(sessionUser(applicant), group.id);
+
+        await service.leave(sessionUser(leader), group.id);
+
+        expect(await groups.findOne({ where: { id: group.id } })).toBeNull();
+        expect(
+          await requests.findOne({ where: { group_id: group.id } }),
+        ).toBeNull();
+      });
+
+      it('deletes an inconsistent group with no other members', async () => {
+        const leader = await createUser(1);
+        const group = await createGroup(leader);
+        await groups.update({ id: group.id }, { member_count: 2 });
+
+        await service.leave(sessionUser(leader), group.id);
+
+        expect(await groups.findOne({ where: { id: group.id } })).toBeNull();
+      });
+
+      it('rejects leaving by a non-member and a missing group', async () => {
+        const leader = await createUser(1);
+        const outsider = await createUser(2);
+        const group = await createGroup(leader);
+
+        await expect(
+          service.leave(sessionUser(outsider), group.id),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        await expect(
+          service.leave(
+            sessionUser(leader),
+            '00000000-0000-0000-0000-000000000000',
+          ),
+        ).rejects.toBeInstanceOf(NotFoundException);
+      });
     });
   });
 });
