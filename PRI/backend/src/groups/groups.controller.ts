@@ -114,7 +114,6 @@ export class GroupsController {
     return this.groups.requestToJoin(user, groupId);
   }
 
-
   @Get(':groupId/members')
   @ApiOperation({ summary: 'Pobierz skład grupy (tylko członkowie)' })
   @ApiOkResponse({ description: 'Lista członków grupy' })

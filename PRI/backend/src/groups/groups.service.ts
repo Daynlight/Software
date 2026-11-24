@@ -204,7 +204,6 @@ export class GroupsService {
     });
   }
 
-
   async members(
     user: UsosSessionUser,
     groupId: string,

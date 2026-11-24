@@ -135,7 +135,6 @@ describe('Groups API', () => {
       .expect(400);
   });
 
-
   it('returns the group roster to a member', async () => {
     const { cookie } = await createUser(1);
     const group = await request(server)
