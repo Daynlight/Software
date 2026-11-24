@@ -87,6 +87,11 @@ export interface CreateGroupInput {
   description: string;
 }
 
+export interface UpdateGroupInput {
+  name?: string;
+  description?: string;
+}
+
 export interface ListJoinRequestsParams {
   status?: JoinRequestStatus | "ALL";
   page?: number;
@@ -135,6 +140,10 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     throw new GroupsApiError(response.status, await readErrorMessage(response));
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return (await response.json()) as T;
 }
 
@@ -163,6 +172,22 @@ export function createGroup(input: CreateGroupInput): Promise<GroupSummary> {
   return apiFetch<GroupSummary>("/groups", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+export function updateGroup(
+  groupId: string,
+  input: UpdateGroupInput,
+): Promise<GroupSummary> {
+  return apiFetch<GroupSummary>(`/groups/${encodeURIComponent(groupId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function leaveGroup(groupId: string): Promise<void> {
+  return apiFetch<void>(`/groups/${encodeURIComponent(groupId)}/leave`, {
+    method: "POST",
   });
 }
 

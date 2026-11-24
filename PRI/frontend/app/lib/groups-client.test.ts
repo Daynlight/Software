@@ -3,10 +3,12 @@ import {
   createGroup,
   fetchMyGroup,
   GroupsApiError,
+  leaveGroup,
   listJoinRequests,
   rejectJoinRequest,
   requestJoin,
   searchGroups,
+  updateGroup,
 } from "./groups-client";
 
 const fetchMock = jest.fn();
@@ -120,6 +122,38 @@ describe("groups API client", () => {
       "/api/groups/group-1/join-requests/request%2F1/reject",
       expect.objectContaining({ method: "POST" }),
     );
+  });
+
+
+  it("updates a group", async () => {
+    fetchMock.mockResolvedValue(response({ id: "group-1" }));
+
+    await updateGroup("group-1", { name: "Nowa nazwa" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/groups/group-1",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ name: "Nowa nazwa" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  });
+
+  it("leaves a group and handles a no-content response", async () => {
+    const noContent = {
+      ok: true,
+      status: 204,
+      json: jest.fn(),
+    } as unknown as Response;
+    fetchMock.mockResolvedValue(noContent);
+
+    await expect(leaveGroup("group-1")).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/groups/group-1/leave",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(noContent.json).not.toHaveBeenCalled();
   });
 
   it("returns the current group or null", async () => {

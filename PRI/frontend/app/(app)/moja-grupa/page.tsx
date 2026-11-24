@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import GroupEditForm from "../../components/groups/GroupEditForm";
 import JoinRequestInbox from "../../components/groups/JoinRequestInbox";
+import LeaveGroupButton from "../../components/groups/LeaveGroupButton";
 import { useMyGroup } from "../../lib/use-my-group";
 import { useSessionUser } from "../../lib/use-session-user";
 
 export default function MyGroupPage() {
   const user = useSessionUser();
   const { status, group, error, refresh } = useMyGroup(user?.id ?? null);
+  const [editing, setEditing] = useState(false);
 
   if (!user) {
     return <p className="text-muted">Sprawdzanie sesji…</p>;
@@ -106,6 +110,30 @@ export default function MyGroupPage() {
         <p className="mt-5 max-w-[70ch] text-base leading-7 text-muted">
           {group.description}
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center gap-4">
+          {isLeader && !editing && (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="min-h-10 rounded-[2px] border border-primary px-4 py-2 text-sm font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              Edytuj dane
+            </button>
+          )}
+          <LeaveGroupButton group={group} isLeader={isLeader} />
+        </div>
+
+        {editing && (
+          <GroupEditForm
+            group={group}
+            onCancel={() => setEditing(false)}
+            onUpdated={() => {
+              setEditing(false);
+              void refresh();
+            }}
+          />
+        )}
 
         <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-2 text-sm leading-5">
           <div className="flex gap-2">

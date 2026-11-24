@@ -4,39 +4,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createGroup } from "../../lib/groups-client";
-
-type FieldErrors = {
-  name?: string;
-  description?: string;
-};
+import {
+  GroupFieldErrors,
+  validateGroupFields,
+} from "../../lib/group-validation";
 
 const field =
   "w-full rounded-[2px] border border-field bg-white px-4 py-3 text-base leading-6 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 const label = "mb-1 block text-sm font-medium leading-6";
 
-function validate(name: string, description: string): FieldErrors {
-  const errors: FieldErrors = {};
-
-  if (name.trim().length < 3) {
-    errors.name = "Nazwa musi mieć co najmniej 3 znaki.";
-  } else if (name.trim().length > 100) {
-    errors.name = "Nazwa może mieć najwyżej 100 znaków.";
-  }
-
-  if (description.trim().length < 10) {
-    errors.description = "Opis musi mieć co najmniej 10 znaków.";
-  } else if (description.trim().length > 2000) {
-    errors.description = "Opis może mieć najwyżej 2000 znaków.";
-  }
-
-  return errors;
-}
-
 export default function CreateGroupForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<GroupFieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -46,7 +27,7 @@ export default function CreateGroupForm() {
     event: React.FormEvent<HTMLFormElement>,
   ): Promise<void> {
     event.preventDefault();
-    const nextErrors = validate(name, description);
+    const nextErrors = validateGroupFields(name, description);
     setErrors(nextErrors);
     setServerError(null);
 

@@ -18,7 +18,7 @@ export default function GroupBoardRow({
       aria-labelledby={headingId}
       className="grid gap-5 border-b border-border py-6 first:border-t md:grid-cols-[96px_minmax(0,1fr)_230px] md:items-center md:gap-8"
     >
-      <div className="flex items-end gap-3 md:flex-col md:items-start md:gap-0">
+      <div className="flex items-center gap-3 md:flex-col md:items-center md:gap-1">
         <span
           aria-hidden="true"
           className={`font-logo text-[46px] leading-none tabular-nums ${
@@ -27,7 +27,7 @@ export default function GroupBoardRow({
         >
           {group.freeSlots}
         </span>
-        <span className="pb-1 text-xs leading-4 text-muted md:pb-0">
+        <span className="pb-1 text-center text-xs leading-4 text-muted md:pb-0">
           {slotsLabel}
         </span>
       </div>

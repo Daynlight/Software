@@ -12,6 +12,33 @@ jest.mock("../../lib/use-my-group", () => ({
   useMyGroup: jest.fn(),
 }));
 
+jest.mock("../../components/groups/GroupEditForm", () => ({
+  __esModule: true,
+  default: ({
+    onCancel,
+    onUpdated,
+  }: {
+    onCancel: () => void;
+    onUpdated: () => void;
+  }) => (
+    <div>
+      <button type="button" onClick={onUpdated}>
+        save-edit
+      </button>
+      <button type="button" onClick={onCancel}>
+        cancel-edit
+      </button>
+    </div>
+  ),
+}));
+
+jest.mock("../../components/groups/LeaveGroupButton", () => ({
+  __esModule: true,
+  default: ({ isLeader }: { isLeader: boolean }) => (
+    <div>leave:{String(isLeader)}</div>
+  ),
+}));
+
 jest.mock("../../components/groups/JoinRequestInbox", () => ({
   __esModule: true,
   default: ({
@@ -151,9 +178,19 @@ describe("MyGroupPage", () => {
       "href",
       "/zgloszenia",
     );
+    expect(screen.getByText("leave:true")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "inbox:group-1" }));
     expect(refresh).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Edytuj dane" }));
+    expect(screen.getByRole("button", { name: "save-edit" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "save-edit" }));
+    expect(refresh).toHaveBeenCalledTimes(2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Edytuj dane" }));
+    fireEvent.click(screen.getByRole("button", { name: "cancel-edit" }));
+    expect(screen.queryByRole("button", { name: "save-edit" })).not.toBeInTheDocument();
   });
 
   it("shows the member view without the inbox", () => {
@@ -169,6 +206,8 @@ describe("MyGroupPage", () => {
     render(<MyGroupPage />);
 
     expect(screen.getByText("członek")).toBeInTheDocument();
+    expect(screen.getByText("leave:false")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edytuj dane" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /inbox/ })).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Zobacz inne grupy" }),
