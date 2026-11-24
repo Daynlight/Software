@@ -27,6 +27,7 @@ describe('GroupsService', () => {
   const baseGroup: Group = {
     id: groupId,
     name: 'Projekt Zespołowy',
+    owner_id: '11111111-1111-1111-1111-111111111111',
     description: 'Opis projektu',
     createdAt: new Date('2026-01-10T10:00:00Z'),
     endedAt: null,
