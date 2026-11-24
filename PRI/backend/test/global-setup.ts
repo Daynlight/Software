@@ -3,6 +3,13 @@ import { AppDataSource } from '../src/database/data-source';
 
 export default async function globalSetup(): Promise<void> {
   const database = process.env.DB_DATABASE ?? 'pri_test';
+
+  if (!/(^|_)test$/.test(database)) {
+    throw new Error(
+      `Refusing to reset non-test database "${database}". Set DB_DATABASE to a database whose name ends with _test.`,
+    );
+  }
+
   const admin = new Client({
     host: process.env.DB_HOST ?? '127.0.0.1',
     port: Number(process.env.DB_PORT ?? 5432),
