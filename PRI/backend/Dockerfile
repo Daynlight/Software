@@ -8,7 +8,7 @@ FROM base AS development
 # ENV NODE_ENV=development
 RUN npm install
 COPY --chown=node:node . .
-CMD ["npm", "run", "start:dev"]
+CMD ["sh", "-c", "npm install --no-audit --no-fund && npm run start:dev"]
 
 # --- Production
 FROM base AS builder

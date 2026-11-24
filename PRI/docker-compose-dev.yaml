@@ -4,6 +4,7 @@ services:
     build: 
       context: backend/
       target: development
+    command: sh -c "npm install --no-audit --no-fund && npm run start:dev"
     container_name: backend_dev
     depends_on:
       db_dev:
@@ -37,7 +38,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 90s
   
   db_dev:
     image: postgres:18
