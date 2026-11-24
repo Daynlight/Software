@@ -25,6 +25,35 @@ export default function DashboardPage() {
         Pulpit: {user.firstName} {user.lastName}
       </h1>
 
+      <section
+        aria-labelledby="groups-shortcut"
+        className="mb-6 flex flex-wrap items-center justify-between gap-4 border-y border-foreground py-5"
+      >
+        <div>
+          <h2 id="groups-shortcut" className="font-serif text-2xl leading-tight">
+            Grupy projektowe
+          </h2>
+          <p className="mt-1 max-w-[58ch] text-sm leading-6 text-muted">
+            Znajdź zespół na giełdzie albo zarządzaj prośbami o dołączenie do
+            swojej grupy.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-4 text-sm font-semibold">
+          <Link
+            href="/gielda"
+            className="text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            Giełda grup
+          </Link>
+          <Link
+            href="/moja-grupa"
+            className="text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            Moja grupa
+          </Link>
+        </div>
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         <div className="flex flex-col gap-6">
           <Card id="komunikaty" title="Komunikaty">

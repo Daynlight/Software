@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createOAuthAuthorizationHeader } from './oauth-signature';
+import { UserRole } from '../database/users/users.entity';
 import {
   UsosHandshake,
   UsosProfile,
@@ -15,7 +16,7 @@ import {
 
 const HTTP_TIMEOUT_MS = 10_000;
 const USER_FIELDS =
-  'id|first_name|last_name|student_number|email|has_photo|photo_urls[200x200]';
+  'id|first_name|last_name|student_number|email|student_status|has_photo|photo_urls[200x200]';
 
 interface UsosResponse {
   status: number;
@@ -137,6 +138,11 @@ export class UsosOAuthClient {
         throw new Error('Incomplete profile');
       }
 
+      const usosId = Number(profile.id);
+      if (!Number.isInteger(usosId) || usosId <= 0) {
+        throw new Error('Invalid USOS id');
+      }
+
       const photoUrl =
         profile.has_photo && profile.photo_urls?.['200x200']
           ? profile.photo_urls['200x200']
@@ -144,10 +150,12 @@ export class UsosOAuthClient {
 
       return {
         id: String(profile.id),
+        usos_id: usosId,
         firstName: profile.first_name,
         lastName: profile.last_name,
         studentNumber: profile.student_number ?? null,
         email: profile.email ?? null,
+        role: profile.student_status === 2 ? UserRole.STUDENT : UserRole.OTHER,
         photoUrl,
       };
     } catch {

@@ -7,6 +7,7 @@ import { HandshakeCookieService } from './handshake-cookie.service';
 import { SessionGuard } from './session.guard';
 import { SessionService } from './session.service';
 import { UsosOAuthClient } from './usos-oauth.client';
+import { UserDBModule } from '../database/users/users.module';
 
 @Module({
   imports: [
@@ -16,8 +17,10 @@ import { UsosOAuthClient } from './usos-oauth.client';
         secret: config.get('sessionSecret'),
       }),
     }),
+    UserDBModule,
   ],
   controllers: [AuthController],
+  exports: [JwtModule, SessionGuard, SessionService],
   providers: [
     AuthService,
     HandshakeCookieService,

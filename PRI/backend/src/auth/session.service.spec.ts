@@ -1,15 +1,19 @@
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '../database/users/users.entity';
 import { JwtService } from '@nestjs/jwt';
 import { SessionService } from './session.service';
+import { UsosSessionUser } from './auth.types';
 
 const secret = 'a'.repeat(64);
-const user = {
-  id: '123',
+const user: UsosSessionUser = {
+  id: '550e8400-e29b-41d4-a716-446655440000',
+  usos_id: 123456,
   firstName: 'Jan',
   lastName: 'Kowalski',
   studentNumber: '123456',
   email: 'jan.kowalski@example.com',
   photoUrl: 'https://example.com/photo.jpg',
+  role: UserRole.STUDENT,
 };
 
 function createService(ttlSeconds = 3600) {
@@ -34,17 +38,33 @@ describe('SessionService', () => {
     const { service, jwt } = createService();
     const legacyToken = jwt.sign({
       sub: user.id,
+      usos_id: user.usos_id,
       firstName: user.firstName,
       lastName: user.lastName,
     });
 
-    await expect(service.verify(legacyToken)).resolves.toEqual({
+    await expect(service.verify(legacyToken)).resolves.toBeNull();
+  });
+
+  it('normalizes missing profile fields to null', async () => {
+    const { service, jwt } = createService();
+    const token = jwt.sign({
+      sub: user.id,
+      usos_id: user.usos_id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: UserRole.STUDENT,
+    });
+
+    await expect(service.verify(token)).resolves.toEqual({
       id: user.id,
+      usos_id: user.usos_id,
       firstName: user.firstName,
       lastName: user.lastName,
       studentNumber: null,
       email: null,
       photoUrl: null,
+      role: UserRole.STUDENT,
     });
   });
 
@@ -61,6 +81,7 @@ describe('SessionService', () => {
     const { service } = createService();
     const foreignToken = new JwtService({ secret: 'b'.repeat(64) }).sign({
       sub: user.id,
+      usos_id: user.usos_id,
       firstName: user.firstName,
       lastName: user.lastName,
     });
@@ -77,7 +98,12 @@ describe('SessionService', () => {
   it('rejects an expired token', async () => {
     const { service, jwt } = createService();
     const expiredToken = jwt.sign(
-      { sub: user.id, firstName: user.firstName, lastName: user.lastName },
+      {
+        sub: user.id,
+        usos_id: user.usos_id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
       { expiresIn: -1 },
     );
 

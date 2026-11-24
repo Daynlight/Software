@@ -4,6 +4,7 @@ import { HandshakeCookieService } from './handshake-cookie.service';
 import { SessionService } from './session.service';
 import { UsosOAuthClient } from './usos-oauth.client';
 import { UsosSessionUser } from './auth.types';
+import { UsersService } from '../database/users/users.service';
 
 export interface LoginStart {
   authorizationUrl: string;
@@ -21,6 +22,7 @@ export class AuthService {
     private readonly usos: UsosOAuthClient,
     private readonly handshakeCookies: HandshakeCookieService,
     private readonly sessions: SessionService,
+    private readonly users: UsersService,
     private readonly config: ConfigService,
   ) {}
 
@@ -49,9 +51,37 @@ export class AuthService {
     }
 
     const accessToken = await this.usos.exchangeToken(tokens, verifier);
-    const user = await this.usos.fetchUser(accessToken);
-    const sessionToken = await this.sessions.issue(user);
+    const usosProfile = await this.usos.fetchUser(accessToken);
 
-    return { user, sessionToken };
+    const usosId = Number(usosProfile.id);
+    if (!Number.isInteger(usosId) || usosId <= 0) {
+      throw new UnauthorizedException(
+        'Niepoprawny identyfikator użytkownika USOS',
+      );
+    }
+
+    const dbUser = await this.users.upsertFromUsos({
+      usosId,
+      firstName: usosProfile.firstName,
+      lastName: usosProfile.lastName,
+      studentNumber: usosProfile.studentNumber,
+      email: usosProfile.email,
+      role: usosProfile.role,
+    });
+
+    const sessionUser: UsosSessionUser = {
+      id: dbUser.id,
+      usos_id: dbUser.usos_id,
+      firstName: dbUser.first_name,
+      lastName: dbUser.last_name,
+      studentNumber: dbUser.student_number,
+      email: dbUser.email,
+      photoUrl: usosProfile.photoUrl,
+      role: dbUser.role,
+    };
+
+    const sessionToken = await this.sessions.issue(sessionUser);
+
+    return { user: sessionUser, sessionToken };
   }
 }

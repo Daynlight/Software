@@ -58,6 +58,28 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   USOS_SCOPES: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_HOST: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(65535)
+  DB_PORT: number;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_USER: string;
+
+  @IsOptional()
+  @IsString()
+  DB_PASSWORD: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DB_DATABASE: string;
 }
 
 export function validateEnvironment(
