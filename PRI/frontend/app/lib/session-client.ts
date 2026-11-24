@@ -5,6 +5,7 @@ export interface UsosUser {
   studentNumber: string | null;
   email: string | null;
   photoUrl: string | null;
+  role?: "STUDENT" | "OTHER";
 }
 
 export async function fetchCurrentUser(): Promise<UsosUser | null> {

@@ -11,6 +11,8 @@
   --placeholder: #d1cdc6;
   --alt: #bab6af;
   --field: #8a857d;
+  --danger: #7a2f2f;
+  --success: #2f5d3a;
 }
 
 @theme inline {
@@ -28,6 +30,8 @@
   --font-serif: var(--font-newsreader-serif), Georgia, serif;
   --font-logo: var(--font-logo-face, ui-monospace), monospace;
   --color-field: var(--field);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
 }
 
 body {
