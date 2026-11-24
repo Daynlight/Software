@@ -27,6 +27,7 @@ const config: Config = {
     'app/components/groups/GroupFilters.tsx',
     'app/components/groups/GroupEditForm.tsx',
     'app/components/groups/GroupJoinAction.tsx',
+    'app/components/groups/GroupMembers.tsx',
     'app/components/groups/LeaveGroupButton.tsx',
     'app/components/groups/JoinRequestInbox.tsx',
     'app/lib/group-validation.ts',

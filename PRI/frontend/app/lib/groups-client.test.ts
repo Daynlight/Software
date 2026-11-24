@@ -2,6 +2,7 @@ import {
   acceptJoinRequest,
   createGroup,
   fetchMyGroup,
+  getGroupMembers,
   GroupsApiError,
   leaveGroup,
   listJoinRequests,
@@ -124,6 +125,19 @@ describe("groups API client", () => {
     );
   });
 
+
+
+  it("fetches group members", async () => {
+    fetchMock.mockResolvedValue(response([{ id: "member-1" }]));
+
+    await expect(getGroupMembers("group-1")).resolves.toEqual([
+      { id: "member-1" },
+    ]);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/groups/group-1/members",
+      expect.objectContaining({ credentials: "same-origin" }),
+    );
+  });
 
   it("updates a group", async () => {
     fetchMock.mockResolvedValue(response({ id: "group-1" }));

@@ -12,6 +12,11 @@ jest.mock("../../lib/use-my-group", () => ({
   useMyGroup: jest.fn(),
 }));
 
+jest.mock("../../components/groups/GroupMembers", () => ({
+  __esModule: true,
+  default: ({ groupId }: { groupId: string }) => <div>members:{groupId}</div>,
+}));
+
 jest.mock("../../components/groups/GroupEditForm", () => ({
   __esModule: true,
   default: ({
@@ -173,6 +178,7 @@ describe("MyGroupPage", () => {
 
     expect(screen.getByRole("heading", { name: "Zespół A" })).toBeInTheDocument();
     expect(screen.getByText("Oczekujące prośby")).toBeInTheDocument();
+    expect(screen.getByText("members:group-1")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "inbox:group-1" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Otwórz pełną listę" })).toHaveAttribute(
       "href",
@@ -206,6 +212,7 @@ describe("MyGroupPage", () => {
     render(<MyGroupPage />);
 
     expect(screen.getByText("członek")).toBeInTheDocument();
+    expect(screen.getByText("members:group-1")).toBeInTheDocument();
     expect(screen.getByText("leave:false")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Edytuj dane" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /inbox/ })).not.toBeInTheDocument();

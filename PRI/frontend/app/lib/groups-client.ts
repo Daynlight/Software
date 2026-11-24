@@ -41,6 +41,13 @@ export interface GroupWarning {
   message: string;
 }
 
+export interface GroupMember {
+  id: string;
+  role: "LEADER" | "MEMBER";
+  joinedAt: string;
+  user: JoinRequestUser;
+}
+
 export interface JoinRequestUser {
   id: string;
   firstName: string;
@@ -204,6 +211,12 @@ export function listJoinRequests(
 ): Promise<JoinRequestListResponse> {
   return apiFetch<JoinRequestListResponse>(
     `/groups/${encodeURIComponent(groupId)}/join-requests${buildQuery(params)}`,
+  );
+}
+
+export function getGroupMembers(groupId: string): Promise<GroupMember[]> {
+  return apiFetch<GroupMember[]>(
+    `/groups/${encodeURIComponent(groupId)}/members`,
   );
 }
 

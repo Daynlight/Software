@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import GroupEditForm from "../../components/groups/GroupEditForm";
+import GroupMembers from "../../components/groups/GroupMembers";
 import JoinRequestInbox from "../../components/groups/JoinRequestInbox";
 import LeaveGroupButton from "../../components/groups/LeaveGroupButton";
 import { useMyGroup } from "../../lib/use-my-group";
@@ -154,6 +155,20 @@ export default function MyGroupPage() {
           </div>
         </dl>
       </header>
+
+      <section aria-labelledby="members-title" className="mt-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 id="members-title" className="font-serif text-2xl">
+            Członkowie
+          </h2>
+          <p className="text-sm text-muted">
+            {group.memberCount} z {group.maxMembers} osób
+          </p>
+        </div>
+        <div className="mt-3">
+          <GroupMembers groupId={group.id} />
+        </div>
+      </section>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section aria-labelledby="requests-title">
