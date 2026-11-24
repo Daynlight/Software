@@ -46,7 +46,6 @@ describe('SessionService', () => {
     await expect(service.verify(legacyToken)).resolves.toBeNull();
   });
 
-
   it('normalizes missing profile fields to null', async () => {
     const { service, jwt } = createService();
     const token = jwt.sign({

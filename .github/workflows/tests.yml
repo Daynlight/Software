@@ -50,3 +50,6 @@ jobs:
 
       - name: Run All Tests
         run: npm test
+
+      - name: Run backend e2e tests
+        run: npm run test:e2e --prefix PRI/backend
