@@ -103,6 +103,7 @@ export default function CreateGroupForm() {
           aria-describedby={errors.name ? "group-name-error" : "group-name-hint"}
           onChange={(event) => {
             setName(event.target.value);
+            setServerError(null);
             setErrors((current) => ({ ...current, name: undefined }));
           }}
           className={field}
@@ -141,6 +142,7 @@ export default function CreateGroupForm() {
           }
           onChange={(event) => {
             setDescription(event.target.value);
+            setServerError(null);
             setErrors((current) => ({ ...current, description: undefined }));
           }}
           className={field}
