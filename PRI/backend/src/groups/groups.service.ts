@@ -28,6 +28,7 @@ import {
   groupSizeWarnings,
 } from './groups.constants';
 import {
+  GroupMemberView,
   GroupSummary,
   JoinRequestResult,
   JoinRequestView,
@@ -201,6 +202,41 @@ export class GroupsService {
       group.member_count -= 1;
       await manager.save(group);
     });
+  }
+
+
+  async members(
+    user: UsosSessionUser,
+    groupId: string,
+  ): Promise<GroupMemberView[]> {
+    await this.getGroupOrThrow(groupId);
+
+    const actor = await this.membersRepository.findOne({
+      where: { group_id: groupId, user_id: user.id },
+    });
+
+    if (!actor) {
+      throw new ForbiddenException('Tylko członkowie grupy widzą jej skład');
+    }
+
+    const rows = await this.membersRepository.find({
+      where: { group_id: groupId },
+      relations: { user: true },
+      order: { role: 'ASC', joined_at: 'ASC' },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      role: row.role,
+      joinedAt: row.joined_at,
+      user: {
+        id: row.user.id,
+        firstName: row.user.first_name,
+        lastName: row.user.last_name,
+        studentNumber: row.user.student_number,
+        email: row.user.email,
+      },
+    }));
   }
 
   async search(

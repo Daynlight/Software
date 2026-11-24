@@ -1,3 +1,4 @@
+import { MemberRole } from '../database/groups_members/groups_members.entity';
 import { JoinRequestStatus } from '../database/join_requests/join-requests.entity';
 import { GroupWarning } from './groups.constants';
 
@@ -21,6 +22,13 @@ export interface GroupSummary {
   createdAt: Date;
   isMember: boolean;
   myRequestStatus: JoinRequestStatus | null;
+}
+
+export interface GroupMemberView {
+  id: string;
+  role: MemberRole;
+  joinedAt: Date;
+  user: JoinRequestUser;
 }
 
 export interface JoinRequestUser {

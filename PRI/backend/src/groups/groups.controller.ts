@@ -32,6 +32,7 @@ import { SearchGroupsQueryDto } from './dto/search-groups.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupsService } from './groups.service';
 import {
+  GroupMemberView,
   GroupSummary,
   JoinRequestResult,
   JoinRequestView,
@@ -111,6 +112,20 @@ export class GroupsController {
     @Param('groupId', ParseUUIDPipe) groupId: string,
   ): Promise<JoinRequestResult> {
     return this.groups.requestToJoin(user, groupId);
+  }
+
+
+  @Get(':groupId/members')
+  @ApiOperation({ summary: 'Pobierz skład grupy (tylko członkowie)' })
+  @ApiOkResponse({ description: 'Lista członków grupy' })
+  @ApiUnauthorizedResponse({ description: 'Brak sesji' })
+  @ApiForbiddenResponse({ description: 'Użytkownik nie jest członkiem grupy' })
+  @ApiNotFoundResponse({ description: 'Grupa nie istnieje' })
+  members(
+    @CurrentUser() user: UsosSessionUser,
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+  ): Promise<GroupMemberView[]> {
+    return this.groups.members(user, groupId);
   }
 
   @Get(':groupId/join-requests')

@@ -762,7 +762,47 @@ describe('GroupsService', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
-    describe('update and leave', () => {
+  
+  describe('members', () => {
+    it('returns the roster to every member', async () => {
+      const leader = await createUser(1);
+      const group = await createGroup(leader);
+      const [member] = await addMembers(group.id, 1, 100);
+
+      const leaderView = await service.members(sessionUser(leader), group.id);
+      const memberView = await service.members(sessionUser(member), group.id);
+
+      expect(leaderView).toHaveLength(2);
+      expect(leaderView.map((row) => row.role)).toEqual([
+        MemberRole.LEADER,
+        MemberRole.MEMBER,
+      ]);
+      expect(leaderView[1].user.id).toBe(member.id);
+      expect(leaderView[1].user.studentNumber).toBe('S100');
+      expect(memberView.map((row) => row.user.id)).toEqual([
+        leader.id,
+        member.id,
+      ]);
+    });
+
+    it('rejects outsiders and missing groups', async () => {
+      const leader = await createUser(1);
+      const outsider = await createUser(2);
+      const group = await createGroup(leader);
+
+      await expect(
+        service.members(sessionUser(outsider), group.id),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(
+        service.members(
+          sessionUser(leader),
+          '00000000-0000-0000-0000-000000000000',
+        ),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('update and leave', () => {
       it('updates the group name and description as the leader', async () => {
         const leader = await createUser(1);
         const group = await createGroup(leader);

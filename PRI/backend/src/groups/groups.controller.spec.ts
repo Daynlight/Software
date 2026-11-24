@@ -39,6 +39,7 @@ function createController() {
     create: jest.fn().mockResolvedValue({ id: 'group-1' }),
     search: jest.fn().mockResolvedValue({ items: [] }),
     requestToJoin: jest.fn().mockResolvedValue({ request: {} }),
+    members: jest.fn().mockResolvedValue([{ id: 'member-1' }]),
     listRequests: jest.fn().mockResolvedValue({ items: [] }),
     accept: jest.fn().mockResolvedValue({ request: {} }),
     reject: jest.fn().mockResolvedValue({ request: {} }),
@@ -75,6 +76,14 @@ describe('GroupsController', () => {
     await controller.requestToJoin(user, 'group-1');
 
     expect(service.requestToJoin).toHaveBeenCalledWith(user, 'group-1');
+  });
+
+  it('delegates listing members', async () => {
+    const { controller, service } = createController();
+
+    await controller.members(user, 'group-1');
+
+    expect(service.members).toHaveBeenCalledWith(user, 'group-1');
   });
 
   it('delegates listing requests', async () => {

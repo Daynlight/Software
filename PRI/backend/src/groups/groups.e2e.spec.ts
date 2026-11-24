@@ -135,6 +135,28 @@ describe('Groups API', () => {
       .expect(400);
   });
 
+
+  it('returns the group roster to a member', async () => {
+    const { cookie } = await createUser(1);
+    const group = await request(server)
+      .post('/groups')
+      .set('Cookie', cookie)
+      .send({
+        name: 'Zespół A',
+        description: 'Opis projektu inżynierskiego',
+      })
+      .expect(201);
+
+    await request(server)
+      .get(`/groups/${group.body.id}/members`)
+      .set('Cookie', cookie)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toHaveLength(1);
+        expect(body[0].role).toBe('LEADER');
+      });
+  });
+
   it('updates and leaves a group', async () => {
     const { cookie } = await createUser(1);
     const group = await request(server)
