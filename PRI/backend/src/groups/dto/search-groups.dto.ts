@@ -41,6 +41,14 @@ export class SearchGroupsQueryDto {
   @IsBoolean()
   hasFreeSlots?: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Tylko grupy, do których należy użytkownik',
+  })
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  mine?: boolean;
+
   @ApiPropertyOptional({ minimum: 0, maximum: MAX_MEMBERS - 1 })
   @IsOptional()
   @Type(() => Number)

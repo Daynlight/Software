@@ -58,6 +58,17 @@ describe('group DTO validation', () => {
     ).toHaveLength(8);
   });
 
+  it('transforms and validates the mine filter', () => {
+    expect(
+      (
+        plainToInstance(SearchGroupsQueryDto, {
+          mine: 'true',
+        }) as SearchGroupsQueryDto
+      ).mine,
+    ).toBe(true);
+    expect(errorsFor(SearchGroupsQueryDto, { mine: 'maybe' })).toHaveLength(1);
+  });
+
   it('validates request status and pagination', () => {
     expect(
       errorsFor(ListJoinRequestsQueryDto, {

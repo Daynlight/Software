@@ -137,6 +137,13 @@ export class GroupsService {
       );
     }
 
+    if (query.mine) {
+      builder.andWhere(
+        'EXISTS (SELECT 1 FROM group_members membership WHERE membership.group_id = g.id AND membership.user_id = :currentUserId)',
+        { currentUserId: user.id },
+      );
+    }
+
     if (query.hasFreeSlots !== undefined) {
       builder.andWhere(
         query.hasFreeSlots

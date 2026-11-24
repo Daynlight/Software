@@ -307,6 +307,22 @@ describe('GroupsService', () => {
       expect(minFreeSlots.items.map((item) => item.name)).toEqual(['Alpha']);
     });
 
+    it('filters to the current user groups', async () => {
+      const { leaderA } = await seedSearchData();
+
+      const result = await service.search(sessionUser(leaderA), {
+        mine: true,
+        page: 1,
+        limit: 20,
+        sort: 'createdAt',
+        order: 'desc',
+      } as SearchGroupsQueryDto);
+
+      expect(result.total).toBe(1);
+      expect(result.items[0].name).toBe('Alpha');
+      expect(result.items[0].isMember).toBe(true);
+    });
+
     it('marks a pending request and escapes LIKE wildcards', async () => {
       const { groupB } = await seedSearchData();
       const literalLeader = await createUser(900);
