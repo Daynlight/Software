@@ -1,64 +1,49 @@
-import { Entity, Index, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
-import { User } from '../users/users.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { Group } from '../groups/groups.entity';
+import { User } from '../users/users.entity';
 
 export enum MemberRole {
   LEADER = 'LEADER',
   MEMBER = 'MEMBER',
 }
 
-export enum GroupPermission {
-  VIEW_GROUP = 'VIEW_GROUP',
-  VIEW_MEMBERS = 'VIEW_MEMBERS',
-  EDIT_GROUP = 'EDIT_GROUP',
-  MANAGE_MEMBERS = 'MANAGE_MEMBERS', 
-  TRANSFER_LEADERSHIP = 'TRANSFER_LEADERSHIP',
-  END_GROUP = 'END_GROUP',
-  LEAVE_GROUP = 'LEAVE_GROUP',
-}
-
-export const PERMISSIONS: Record<MemberRole, GroupPermission[]> = {
-  [MemberRole.LEADER]: Object.values(GroupPermission),
-  [MemberRole.MEMBER]: [
-    GroupPermission.VIEW_GROUP,
-    GroupPermission.VIEW_MEMBERS,
-    GroupPermission.LEAVE_GROUP, 
-  ],
-};
-
-
-
-@Entity('groups_members')
-@Index('UQ_groups_members_active', ['group_id', 'user_id'], { unique: true, where: '"leftAt" IS NULL'})
+@Entity('group_members')
+@Unique('UQ_group_members_user', ['user_id'])
+@Unique('UQ_group_members_group_user', ['group_id', 'user_id'])
+@Index('UQ_group_members_leader', ['group_id'], {
+  unique: true,
+  where: `"role" = 'LEADER'`,
+})
 export class GroupMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid', nullable: false })
+  @Column({ type: 'uuid' })
   group_id: string;
 
-  @Column({ type: 'uuid', nullable: false })
+  @Column({ type: 'uuid' })
   user_id: string;
 
-  @Column({ type: 'varchar', default: 'MEMBER', nullable: false })
+  @Column({ type: 'enum', enum: MemberRole })
   role: MemberRole;
 
-  @CreateDateColumn()
-  joinedAt: Date;
+  @CreateDateColumn({ type: 'timestamptz' })
+  joined_at: Date;
 
-  @Column({ type: 'timestamp', nullable: true, default: null })
-  leftAt: Date | null;
-  
-  @ManyToOne(() => Group, (group) => group.groupMembers, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'group_id', referencedColumnName: 'id' })
+  @ManyToOne(() => Group, (group) => group.members, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'group_id' })
   group: Group;
 
-  @ManyToOne(() => User, (user) => user.groupMembers, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
+  @ManyToOne(() => User, (user) => user.memberships, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 }
-

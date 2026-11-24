@@ -2,10 +2,16 @@ import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { UsosSessionUser } from './auth.types';
+import { UserRole } from '../database/users/users.entity';
 
 const dbUser = {
   id: '550e8400-e29b-41d4-a716-446655440000',
   usos_id: 123,
+  first_name: 'Jan',
+  last_name: 'Kowalski',
+  student_number: '123456',
+  email: 'jan.kowalski@example.edu.pl',
+  role: UserRole.STUDENT,
 };
 
 const usosUser: UsosSessionUser = {
@@ -16,6 +22,7 @@ const usosUser: UsosSessionUser = {
   studentNumber: '123456',
   email: 'jan.kowalski@example.edu.pl',
   photoUrl: 'https://example.com/photo.jpg',
+  role: UserRole.STUDENT,
 };
 
 const sessionUser: UsosSessionUser = {
@@ -41,7 +48,7 @@ function createService() {
   };
   const sessions = { issue: jest.fn().mockResolvedValue('session-token') };
   const users = {
-    findOrCreateUser: jest.fn().mockResolvedValue(dbUser),
+    upsertFromUsos: jest.fn().mockResolvedValue(dbUser),
   };
   const config = {
     get: jest.fn().mockReturnValue('https://usosapps.amu.edu.pl'),
@@ -108,33 +115,15 @@ describe('AuthService', () => {
         token: 'access-token',
         secret: 'access-secret',
       });
-      expect(users.findOrCreateUser).toHaveBeenCalledWith(
-        123,
-        'Jan',
-        'Kowalski',
-        123456,
-        'jan.kowalski@example.edu.pl',
-      );
-      expect(sessions.issue).toHaveBeenCalledWith(sessionUser);
-    });
-
-    it('normalizes missing studentNumber and email to null', async () => {
-      const { service, usos, users } = createService();
-      usos.fetchUser.mockResolvedValue({
-        ...usosUser,
-        studentNumber: '',
-        email: null,
+      expect(users.upsertFromUsos).toHaveBeenCalledWith({
+        usosId: 123,
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        studentNumber: '123456',
+        email: 'jan.kowalski@example.edu.pl',
+        role: UserRole.STUDENT,
       });
-
-      await service.complete('sealed-handshake', 'verifier');
-
-      expect(users.findOrCreateUser).toHaveBeenCalledWith(
-        123,
-        'Jan',
-        'Kowalski',
-        null,
-        null,
-      );
+      expect(sessions.issue).toHaveBeenCalledWith(sessionUser);
     });
 
     it('rejects an invalid USOS user id', async () => {
@@ -148,7 +137,7 @@ describe('AuthService', () => {
         service.complete('sealed-handshake', 'verifier'),
       ).rejects.toBeInstanceOf(UnauthorizedException);
 
-      expect(users.findOrCreateUser).not.toHaveBeenCalled();
+      expect(users.upsertFromUsos).not.toHaveBeenCalled();
     });
 
     it('rejects a missing verifier', async () => {

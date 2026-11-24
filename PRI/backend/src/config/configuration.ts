@@ -4,6 +4,13 @@ export interface AppConfiguration {
   cookiesSecure: boolean;
   sessionSecret: string;
   sessionTtlSeconds: number;
+  database: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
+  };
   usos: {
     baseUrl: string;
     consumerKey: string;
@@ -23,6 +30,13 @@ export default (): AppConfiguration => ({
   cookiesSecure: process.env.NODE_ENV === 'production',
   sessionSecret: process.env.SESSION_SECRET,
   sessionTtlSeconds: Number(process.env.SESSION_TTL_SECONDS ?? 86400),
+  database: {
+    host: process.env.DB_HOST ?? '127.0.0.1',
+    port: Number(process.env.DB_PORT ?? 5432),
+    username: process.env.DB_USER ?? process.env.USER,
+    password: process.env.DB_PASSWORD ?? '',
+    database: process.env.DB_DATABASE ?? 'pri_test',
+  },
   usos: {
     baseUrl: stripTrailingSlash(process.env.USOS_API_BASE_URL),
     consumerKey: process.env.USOS_CONSUMER_KEY,

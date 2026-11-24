@@ -8,6 +8,11 @@ const validEnvironment = {
   USOS_CALLBACK_URL: 'http://localhost:8090/api/auth/usos/callback',
   FRONTEND_URL: 'http://localhost:8090',
   SESSION_SECRET: 'a'.repeat(64),
+  DB_HOST: '127.0.0.1',
+  DB_PORT: '5432',
+  DB_USER: 'root',
+  DB_PASSWORD: 'secret',
+  DB_DATABASE: 'pri',
 };
 
 describe('validateEnvironment', () => {
@@ -71,6 +76,11 @@ describe('configuration', () => {
     'USOS_CONSUMER_SECRET',
     'USOS_CALLBACK_URL',
     'USOS_SCOPES',
+    'DB_HOST',
+    'DB_PORT',
+    'DB_USER',
+    'DB_PASSWORD',
+    'DB_DATABASE',
   ] as const;
   const originalEnvironment = { ...process.env };
 
@@ -101,6 +111,13 @@ describe('configuration', () => {
       cookiesSecure: true,
       sessionSecret: 'a'.repeat(64),
       sessionTtlSeconds: 3600,
+      database: {
+        host: '127.0.0.1',
+        port: 5432,
+        username: 'root',
+        password: 'secret',
+        database: 'pri',
+      },
       usos: {
         baseUrl: 'https://usosapps.amu.edu.pl',
         consumerKey: 'consumer-key',
@@ -118,6 +135,28 @@ describe('configuration', () => {
     expect(config.cookiesSecure).toBe(false);
     expect(config.sessionTtlSeconds).toBe(86400);
     expect(config.usos.scopes).toBe('');
+  });
+
+  it('applies database defaults when DB variables are missing', () => {
+    for (const key of [
+      'DB_HOST',
+      'DB_PORT',
+      'DB_USER',
+      'DB_PASSWORD',
+      'DB_DATABASE',
+    ]) {
+      delete process.env[key];
+    }
+
+    const config = configuration();
+
+    expect(config.database).toEqual({
+      host: '127.0.0.1',
+      port: 5432,
+      username: process.env.USER,
+      password: '',
+      database: 'pri_test',
+    });
   });
 
   it('removes trailing slashes from URLs', () => {

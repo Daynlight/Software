@@ -20,6 +20,7 @@ import { UserDBModule } from '../database/users/users.module';
     UserDBModule,
   ],
   controllers: [AuthController],
+  exports: [JwtModule, SessionGuard, SessionService],
   providers: [
     AuthService,
     HandshakeCookieService,

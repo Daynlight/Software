@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import configuration from './config/configuration';
 import { validateEnvironment } from './config/environment';
 import { DatabaseModule } from './database/database.module';
-
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -19,6 +19,7 @@ import { DatabaseModule } from './database/database.module';
     }),
     AuthModule,
     DatabaseModule,
+    GroupsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

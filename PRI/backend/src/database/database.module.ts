@@ -1,29 +1,33 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { AppConfiguration } from '../config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './users/users.entity';
-import { Group } from './groups/groups.entity';
-import { GroupMember } from './groups_members/groups_members.entity'
+import { databaseEntities } from './data-source';
+import { InitialSchema1732400000000 } from './migrations/1732400000000-InitialSchema';
 import { UserDBModule } from './users/users.module';
-import { GroupDBModule } from './groups/groups.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT, 10) || 5432,
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      entities: [
-        User,
-        Group,
-        GroupMember
-      ],
-      synchronize: process.env.NODE_ENV !== 'production',
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const database = config.get<AppConfiguration['database']>('database');
+
+        return {
+          type: 'postgres' as const,
+          host: database.host,
+          port: database.port,
+          username: database.username,
+          password: database.password,
+          database: database.database,
+          entities: databaseEntities,
+          migrations: [InitialSchema1732400000000],
+          migrationsRun: true,
+          synchronize: false,
+        };
+      },
     }),
     UserDBModule,
-    GroupDBModule,
   ],
 })
 export class DatabaseModule {}

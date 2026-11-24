@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsosSessionUser } from './auth.types';
+import { UserRole } from '../database/users/users.entity';
 
 interface SessionPayload {
   sub: string;
@@ -11,6 +12,7 @@ interface SessionPayload {
   studentNumber?: string | null;
   email: string | null;
   photoUrl?: string | null;
+  role: UserRole;
 }
 
 @Injectable()
@@ -34,6 +36,7 @@ export class SessionService {
         studentNumber: user.studentNumber,
         email: user.email,
         photoUrl: user.photoUrl,
+        role: user.role,
       },
       { expiresIn: this.ttlSeconds },
     );
@@ -43,8 +46,8 @@ export class SessionService {
     try {
       const payload = await this.jwt.verifyAsync<SessionPayload>(token);
       const usosId = Number(payload.usos_id);
-      
-      return payload.sub
+
+      return payload.sub && payload.role
         ? {
             id: payload.sub,
             usos_id: usosId,
@@ -53,6 +56,7 @@ export class SessionService {
             studentNumber: payload.studentNumber ?? null,
             email: payload.email ?? null,
             photoUrl: payload.photoUrl ?? null,
+            role: payload.role,
           }
         : null;
     } catch {

@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '../database/users/users.entity';
 import { JwtService } from '@nestjs/jwt';
 import { SessionService } from './session.service';
 import { UsosSessionUser } from './auth.types';
@@ -12,6 +13,7 @@ const user: UsosSessionUser = {
   studentNumber: '123456',
   email: 'jan.kowalski@example.com',
   photoUrl: 'https://example.com/photo.jpg',
+  role: UserRole.STUDENT,
 };
 
 function createService(ttlSeconds = 3600) {
@@ -41,7 +43,21 @@ describe('SessionService', () => {
       lastName: user.lastName,
     });
 
-    await expect(service.verify(legacyToken)).resolves.toEqual({
+    await expect(service.verify(legacyToken)).resolves.toBeNull();
+  });
+
+
+  it('normalizes missing profile fields to null', async () => {
+    const { service, jwt } = createService();
+    const token = jwt.sign({
+      sub: user.id,
+      usos_id: user.usos_id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: UserRole.STUDENT,
+    });
+
+    await expect(service.verify(token)).resolves.toEqual({
       id: user.id,
       usos_id: user.usos_id,
       firstName: user.firstName,
@@ -49,6 +65,7 @@ describe('SessionService', () => {
       studentNumber: null,
       email: null,
       photoUrl: null,
+      role: UserRole.STUDENT,
     });
   });
 

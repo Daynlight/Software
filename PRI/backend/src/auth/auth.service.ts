@@ -52,33 +52,32 @@ export class AuthService {
 
     const accessToken = await this.usos.exchangeToken(tokens, verifier);
     const usosProfile = await this.usos.fetchUser(accessToken);
-    
+
     const usosId = Number(usosProfile.id);
     if (!Number.isInteger(usosId) || usosId <= 0) {
-      throw new UnauthorizedException('Niepoprawny identyfikator użytkownika USOS');
+      throw new UnauthorizedException(
+        'Niepoprawny identyfikator użytkownika USOS',
+      );
     }
-    
-    const studentNumberRaw = usosProfile.studentNumber;
-    const parsedStudentNumber =
-      studentNumberRaw === null ||
-      studentNumberRaw === undefined ||
-      studentNumberRaw === '' ? null : Number(studentNumberRaw);
-    
-    const normalizedStudentNumber =
-      parsedStudentNumber !== null && Number.isInteger(parsedStudentNumber) ? parsedStudentNumber : null;
-    
-    const dbUser = await this.users.findOrCreateUser(
+
+    const dbUser = await this.users.upsertFromUsos({
       usosId,
-      usosProfile.firstName,
-      usosProfile.lastName,
-      normalizedStudentNumber,
-      usosProfile.email ?? null,
-    );
+      firstName: usosProfile.firstName,
+      lastName: usosProfile.lastName,
+      studentNumber: usosProfile.studentNumber,
+      email: usosProfile.email,
+      role: usosProfile.role,
+    });
 
     const sessionUser: UsosSessionUser = {
-      ...usosProfile,
       id: dbUser.id,
       usos_id: dbUser.usos_id,
+      firstName: dbUser.first_name,
+      lastName: dbUser.last_name,
+      studentNumber: dbUser.student_number,
+      email: dbUser.email,
+      photoUrl: usosProfile.photoUrl,
+      role: dbUser.role,
     };
 
     const sessionToken = await this.sessions.issue(sessionUser);
@@ -86,4 +85,3 @@ export class AuthService {
     return { user: sessionUser, sessionToken };
   }
 }
-

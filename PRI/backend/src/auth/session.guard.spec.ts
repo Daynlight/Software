@@ -1,4 +1,5 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { UserRole } from '../database/users/users.entity';
 import { SessionGuard } from './session.guard';
 import { SESSION_COOKIE } from './auth.constants';
 import { UsosSessionUser } from './auth.types';
@@ -11,6 +12,7 @@ const user: UsosSessionUser = {
   studentNumber: '123456',
   email: 'jan.kowalski@example.edu.pl',
   photoUrl: 'https://example.com/photo.jpg',
+  role: UserRole.STUDENT,
 };
 
 function createContext(request: Record<string, unknown>): ExecutionContext {

@@ -10,6 +10,28 @@ jobs:
       matrix:
         node-version: [20.x]
 
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: hello_password
+          POSTGRES_DB: pri_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U root -d pri_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: hello_password
+      DB_DATABASE: pri_test
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,6 +44,9 @@ jobs:
 
       - name: Install Dependencies
         run: npm run install
+
+      - name: Build backend
+        run: npm run build:backend
 
       - name: Run All Tests
         run: npm test

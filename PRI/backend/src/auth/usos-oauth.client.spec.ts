@@ -1,6 +1,7 @@
 import { BadGatewayException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UsosOAuthClient } from './usos-oauth.client';
+import { UserRole } from '../database/users/users.entity';
 
 const configuration: Record<string, string> = {
   'usos.baseUrl': 'https://usosapps.amu.edu.pl',
@@ -167,6 +168,7 @@ describe('UsosOAuthClient', () => {
           last_name: 'Kowalski',
           student_number: '123456',
           email: 'jan.kowalski@example.com',
+          student_status: 2,
           has_photo: true,
           photo_urls: { '200x200': 'https://example.com/photo.jpg' },
         }),
@@ -181,11 +183,12 @@ describe('UsosOAuthClient', () => {
         lastName: 'Kowalski',
         studentNumber: '123456',
         email: 'jan.kowalski@example.com',
+        role: UserRole.STUDENT,
         photoUrl: 'https://example.com/photo.jpg',
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://usosapps.amu.edu.pl/services/users/user?fields=id%7Cfirst_name%7Clast_name%7Cstudent_number%7Cemail%7Chas_photo%7Cphoto_urls%5B200x200%5D',
+        'https://usosapps.amu.edu.pl/services/users/user?fields=id%7Cfirst_name%7Clast_name%7Cstudent_number%7Cemail%7Cstudent_status%7Chas_photo%7Cphoto_urls%5B200x200%5D',
         expect.objectContaining({ method: 'GET' }),
       );
       expect(authorizationHeader(fetchMock)).toContain(
@@ -202,6 +205,7 @@ describe('UsosOAuthClient', () => {
           last_name: 'Kowalski',
           student_number: '123456',
           email: null,
+          student_status: 2,
           has_photo: false,
           photo_urls: { '200x200': 'https://example.com/photo.jpg' },
         }),
@@ -215,6 +219,51 @@ describe('UsosOAuthClient', () => {
         lastName: 'Kowalski',
         studentNumber: '123456',
         email: null,
+        role: UserRole.STUDENT,
+        photoUrl: null,
+      });
+    });
+
+    it.each(['0', 'abc'])('rejects an invalid USOS id %s', async (id) => {
+      global.fetch = mockFetch(
+        200,
+        JSON.stringify({
+          id,
+          first_name: 'Jan',
+          last_name: 'Kowalski',
+          email: null,
+        }),
+      );
+      const { client } = createClient();
+
+      await expect(client.fetchUser(token)).rejects.toBeInstanceOf(
+        BadGatewayException,
+      );
+    });
+
+    it('handles a visible photo without a URL', async () => {
+      global.fetch = mockFetch(
+        200,
+        JSON.stringify({
+          id: '123456',
+          first_name: 'Jan',
+          last_name: 'Kowalski',
+          student_number: '123456',
+          email: null,
+          student_status: 2,
+          has_photo: true,
+        }),
+      );
+      const { client } = createClient();
+
+      await expect(client.fetchUser(token)).resolves.toEqual({
+        id: '123456',
+        usos_id: 123456,
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        studentNumber: '123456',
+        email: null,
+        role: UserRole.STUDENT,
         photoUrl: null,
       });
     });
@@ -239,6 +288,7 @@ describe('UsosOAuthClient', () => {
         lastName: 'Kowalski',
         studentNumber: null,
         email: null,
+        role: UserRole.OTHER,
         photoUrl: null,
       });
     });

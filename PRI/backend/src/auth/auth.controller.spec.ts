@@ -3,6 +3,7 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { UserRole } from '../database/users/users.entity';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { AuthController } from './auth.controller';
@@ -21,6 +22,7 @@ const user: UsosSessionUser = {
   studentNumber: '123456',
   email: 'jan.kowalski@example.edu.pl',
   photoUrl: 'https://example.com/photo.jpg',
+  role: UserRole.STUDENT,
 };
 
 function createController(options: { cookiesSecure?: boolean } = {}) {

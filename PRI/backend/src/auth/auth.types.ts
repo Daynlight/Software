@@ -3,6 +3,8 @@ export interface UsosToken {
   secret: string;
 }
 
+import { UserRole } from '../database/users/users.entity';
+
 export type UsosHandshake = UsosToken;
 
 export interface UsosSessionUser {
@@ -13,6 +15,7 @@ export interface UsosSessionUser {
   studentNumber: string | null;
   email: string | null;
   photoUrl: string | null;
+  role: UserRole;
 }
 
 export interface UsosProfile {
@@ -22,6 +25,7 @@ export interface UsosProfile {
   last_name: string;
   student_number?: string | null;
   email: string | null;
+  student_status?: number | null;
   has_photo?: boolean;
   photo_urls?: Record<string, string>;
 }

@@ -4,6 +4,7 @@ services:
     build: 
       context: backend/
       target: development
+    container_name: backend_dev
     depends_on:
       db_dev:
         condition: service_healthy
@@ -40,6 +41,7 @@ services:
   
   db_dev:
     image: postgres:18
+    container_name: db_dev
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_USER=${DB_USER}
@@ -61,6 +63,7 @@ services:
     build: 
       context: frontend/
       target: development
+    container_name: frontend_dev
     depends_on:
       backend_dev:
         condition: service_healthy
@@ -85,6 +88,7 @@ services:
 # === routing === #
   nginx_dev:
     image: nginx:1-alpine
+    container_name: nginx_dev
     depends_on:
       backend_dev:
         condition: service_healthy
@@ -112,6 +116,7 @@ services:
 
   cloudflare:
     image: cloudflare/cloudflared:latest
+    container_name: cloudflare_dev
     restart: unless-stopped
     command: tunnel run
     depends_on:

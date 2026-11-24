@@ -1,33 +1,53 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './users.entity';
+import { User, UserRole } from './users.entity';
+
+export interface UsosUserData {
+  usosId: number;
+  firstName: string;
+  lastName: string;
+  studentNumber: string | null;
+  email: string | null;
+  role: UserRole;
+}
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
   ) {}
 
-  async findByUsosID(usos_id: number): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { usos_id } });
+  findById(id: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findOrCreateUser(
-    usos_id: number,
-    first_name: string, 
-    last_name: string, 
-    student_number?: number | null,
-    email?: string | null,
-  ): Promise<User> {
-    const existing = await this.findByUsosID(usos_id);
+  findByUsosId(usosId: number): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { usos_id: usosId } });
+  }
+
+  async upsertFromUsos(data: UsosUserData): Promise<User> {
+    const existing = await this.findByUsosId(data.usosId);
+
     if (existing) {
-      return existing;
+      existing.first_name = data.firstName;
+      existing.last_name = data.lastName;
+      existing.student_number = data.studentNumber;
+      existing.email = data.email;
+      existing.role = data.role;
+      return this.usersRepository.save(existing);
     }
 
-    const newUser = this.usersRepository.create({ usos_id, first_name, last_name, student_number, email });
-    return this.usersRepository.save(newUser);
+    const user = this.usersRepository.create({
+      usos_id: data.usosId,
+      first_name: data.firstName,
+      last_name: data.lastName,
+      student_number: data.studentNumber,
+      email: data.email,
+      role: data.role,
+    });
+
+    return this.usersRepository.save(user);
   }
 }
-
